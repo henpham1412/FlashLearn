@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/flashcard
+    username: your_username
+    password: your_password
+
+jwt:
+  signerKey: your-secret-key
