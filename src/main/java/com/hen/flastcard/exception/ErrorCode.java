@@ -20,7 +20,10 @@ public enum ErrorCode {
     USERNAME_REQUIRED(1008, "you must have a username", HttpStatus.BAD_REQUEST),
     PASSWORD_REQUIRED(1009, "you must have a password", HttpStatus.BAD_REQUEST),
     EMAIL_REQUIRED(1009, "you must have a email", HttpStatus.BAD_REQUEST),
-    EMAIL_INVALID(1010, "your email is invalid", HttpStatus.BAD_REQUEST)
+    EMAIL_INVALID(1010, "your email is invalid", HttpStatus.BAD_REQUEST),
+    DECK_NAME_REQUIRED(1011, "you must have a deck name", HttpStatus.BAD_REQUEST),
+    DESCRIPTION_REQUIRED(1012,"you must have a description", HttpStatus.BAD_REQUEST),
+    DECK_NOT_EXISTED(1013, "deck has not been existed" , HttpStatus.NOT_FOUND),
     ;
     int code;
     String message;
