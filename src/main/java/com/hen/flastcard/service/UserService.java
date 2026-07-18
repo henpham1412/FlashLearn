@@ -53,6 +53,9 @@ public class UserService {
     }
 
     public String deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
         userRepository.deleteById(id);
         return "User has been deleted";
     }

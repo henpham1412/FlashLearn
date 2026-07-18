@@ -24,6 +24,10 @@ public enum ErrorCode {
     DECK_NAME_REQUIRED(1011, "you must have a deck name", HttpStatus.BAD_REQUEST),
     DESCRIPTION_REQUIRED(1012,"you must have a description", HttpStatus.BAD_REQUEST),
     DECK_NOT_EXISTED(1013, "deck has not been existed" , HttpStatus.NOT_FOUND),
+    WORD_REQUIRED(1014,"you must have a word", HttpStatus.BAD_REQUEST),
+    HIRA_KATA_REQUIRED(1015,"you must have a hira_kata", HttpStatus.BAD_REQUEST),
+    MEANING_REQUIRED(1016,"you must have a meaning", HttpStatus.BAD_REQUEST),
+    FLASHCARD_NOT_EXISTED(1017, "flashcard has not been existed" , HttpStatus.NOT_FOUND),
     ;
     int code;
     String message;

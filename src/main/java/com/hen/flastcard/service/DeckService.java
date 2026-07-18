@@ -48,6 +48,9 @@ public class DeckService {
     }
 
     public String deleteDeck(Long id) {
+        if (!deckRepository.existsById(id)) {
+            throw new AppException(ErrorCode.DECK_NOT_EXISTED);
+        }
         deckRepository.deleteById(id);
         return "Deck has been deleted";
     }

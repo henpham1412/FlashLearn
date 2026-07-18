@@ -4,6 +4,7 @@ import com.hen.flastcard.dto.request.DeckRequest;
 import com.hen.flastcard.dto.response.ApiResponse;
 import com.hen.flastcard.dto.response.DeckResponse;
 import com.hen.flastcard.service.DeckService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,7 +20,7 @@ public class DeckController {
     DeckService deckService;
 
     @PostMapping
-    public ApiResponse<DeckResponse> createDeck(@RequestBody DeckRequest request) {
+    public ApiResponse<DeckResponse> createDeck(@RequestBody @Valid DeckRequest request) {
         return ApiResponse.<DeckResponse>builder()
                 .result(deckService.createDeck(request))
                 .build();
@@ -40,7 +41,7 @@ public class DeckController {
 
     @PutMapping("/{deckId}")
     public ApiResponse<DeckResponse> updateDeck(@PathVariable("deckId") Long id,
-                                                @RequestBody DeckRequest request) {
+                                                @RequestBody @Valid DeckRequest request) {
         return ApiResponse.<DeckResponse>builder()
                 .result(deckService.updateDeck(id, request))
                 .build();
