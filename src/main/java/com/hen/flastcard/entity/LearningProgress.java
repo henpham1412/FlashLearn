@@ -1,9 +1,7 @@
 package com.hen.flastcard.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,6 +14,9 @@ import java.time.LocalDate;
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LearningProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,7 +31,7 @@ public class LearningProgress {
     @Column(nullable = false)
     Integer repetition;
 
-    @Column(nullable = false, name = "last_review_date")
+    @Column(name = "last_review_date", nullable = true)
     LocalDate lastReviewDate;
     @Column(nullable = false, name = "next_review_date")
     LocalDate nextReviewDate;
