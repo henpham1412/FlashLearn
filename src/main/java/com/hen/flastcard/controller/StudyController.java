@@ -1,15 +1,15 @@
 package com.hen.flastcard.controller;
 
+import com.hen.flastcard.dto.request.ReviewRequest;
 import com.hen.flastcard.dto.response.ApiResponse;
+import com.hen.flastcard.dto.response.ReviewResponse;
 import com.hen.flastcard.dto.response.StudyCardResponse;
 import com.hen.flastcard.service.StudyService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +23,13 @@ public class StudyController {
     public ApiResponse<List<StudyCardResponse>> startStudying(@PathVariable("deckId") Long id) {
         return ApiResponse.<List<StudyCardResponse>>builder()
                 .result(studyService.loadStudyCards(id))
+                .build();
+    }
+
+    @PostMapping("/study/review")
+    public ApiResponse<ReviewResponse> reviewCard(@RequestBody @Valid ReviewRequest request) {
+        return ApiResponse.<ReviewResponse>builder()
+                .result(studyService.reviewCard(request))
                 .build();
     }
 }

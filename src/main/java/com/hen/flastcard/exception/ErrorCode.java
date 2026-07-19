@@ -28,6 +28,10 @@ public enum ErrorCode {
     HIRA_KATA_REQUIRED(1015,"you must have a hira_kata", HttpStatus.BAD_REQUEST),
     MEANING_REQUIRED(1016,"you must have a meaning", HttpStatus.BAD_REQUEST),
     FLASHCARD_NOT_EXISTED(1017, "flashcard has not been existed" , HttpStatus.NOT_FOUND),
+    QUALITY_REQUIRED(1018,"you must have a quality", HttpStatus.BAD_REQUEST),
+    CARD_ID_REQUIRED(1018,"you must have a cardId", HttpStatus.BAD_REQUEST),
+    QUALITY_INVALID(1019, "your quality is invalid", HttpStatus.BAD_REQUEST),
+    PROGRESS_NOT_EXISTED(1020, "progress has not been existed" , HttpStatus.NOT_FOUND),
     ;
     int code;
     String message;

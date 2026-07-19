@@ -1,9 +1,13 @@
 package com.hen.flastcard.service;
 
+import com.hen.flastcard.dto.request.ReviewRequest;
+import com.hen.flastcard.dto.response.ReviewResponse;
 import com.hen.flastcard.dto.response.StudyCardResponse;
 import com.hen.flastcard.entity.FlashCard;
 import com.hen.flastcard.entity.LearningProgress;
 import com.hen.flastcard.entity.User;
+import com.hen.flastcard.exception.AppException;
+import com.hen.flastcard.exception.ErrorCode;
 import com.hen.flastcard.mapper.StudyMapper;
 import com.hen.flastcard.repository.FlashCardRepository;
 import com.hen.flastcard.repository.LearningProgressRepository;
@@ -26,7 +30,7 @@ public class StudyService {
     CurrentUserService currentUserService;
     LearningProgressService learningProgressService;
     StudyMapper studyMapper;
-
+    SpacedRepetitionStrategy spacedRepetitionStrategy;
     private Map<Long, LearningProgress> loadProgress(User user, Long deckId) {
         List<LearningProgress> learningProgresses = learningProgressRepository.findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), deckId);
         Map<Long, LearningProgress> progressMap = new HashMap<>();
@@ -63,5 +67,18 @@ public class StudyService {
             }
         }
         return studyCardResponses;
+    }
+
+    public ReviewResponse reviewCard(ReviewRequest request) {
+        User user = currentUserService.getCurrentUser();
+        LearningProgress progress = learningProgressRepository
+                .findByUser_IdAndFlashCard_Id(user.getId(), request.getCardId())
+                .orElseThrow(() -> new AppException(ErrorCode.PROGRESS_NOT_EXISTED));;
+        spacedRepetitionStrategy.updateProgress(progress, request.getQuality());
+        learningProgressRepository.save(progress);
+        return ReviewResponse.builder()
+                .success(true)
+                .nextReviewDate(progress.getNextReviewDate())
+                .build();
     }
 }
