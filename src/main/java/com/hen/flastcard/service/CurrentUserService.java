@@ -7,6 +7,8 @@ import com.hen.flastcard.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -15,7 +17,9 @@ import org.springframework.stereotype.Component;
 public class CurrentUserService {
     UserRepository userRepository;
     public User getCurrentUser() {
-        return userRepository.findById(1L)
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
 }

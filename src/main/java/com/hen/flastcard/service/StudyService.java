@@ -3,12 +3,14 @@ package com.hen.flastcard.service;
 import com.hen.flastcard.dto.request.ReviewRequest;
 import com.hen.flastcard.dto.response.ReviewResponse;
 import com.hen.flastcard.dto.response.StudyCardResponse;
+import com.hen.flastcard.entity.Deck;
 import com.hen.flastcard.entity.FlashCard;
 import com.hen.flastcard.entity.LearningProgress;
 import com.hen.flastcard.entity.User;
 import com.hen.flastcard.exception.AppException;
 import com.hen.flastcard.exception.ErrorCode;
 import com.hen.flastcard.mapper.StudyMapper;
+import com.hen.flastcard.repository.DeckRepository;
 import com.hen.flastcard.repository.FlashCardRepository;
 import com.hen.flastcard.repository.LearningProgressRepository;
 import lombok.AccessLevel;
@@ -26,6 +28,7 @@ import java.util.*;
 @Slf4j
 public class StudyService {
     FlashCardRepository flashCardRepository;
+    DeckRepository deckRepository;
     LearningProgressRepository learningProgressRepository;
     CurrentUserService currentUserService;
     LearningProgressService learningProgressService;
@@ -51,6 +54,8 @@ public class StudyService {
     public List<StudyCardResponse> loadStudyCards(Long id) {
         List<StudyCardResponse> studyCardResponses = new ArrayList<>();
         User user = currentUserService.getCurrentUser();
+        Deck deck = deckRepository.findByIdAndUser_Id(id ,user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
         List<FlashCard> flashCards = flashCardRepository.findAllByDeck_Id(id);
         Map<Long, LearningProgress> progressMap = loadProgress(user, id);
         for (FlashCard card: flashCards) {
