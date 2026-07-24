@@ -4,6 +4,7 @@ import com.hen.flastcard.dto.request.FlashCardRequest;
 import com.hen.flastcard.dto.response.FlashCardResponse;
 import com.hen.flastcard.entity.Deck;
 import com.hen.flastcard.entity.FlashCard;
+import com.hen.flastcard.entity.User;
 import com.hen.flastcard.exception.AppException;
 import com.hen.flastcard.exception.ErrorCode;
 import com.hen.flastcard.mapper.FlashCardMapper;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -21,6 +24,7 @@ public class FlashCardService {
     FlashCardRepository flashCardRepository;
     DeckRepository deckRepository;
     FlashCardMapper flashCardMapper;
+    CurrentUserService currentUserService;
     public FlashCardResponse createFalshCard(Long id, FlashCardRequest request) {
         FlashCard flashCard = flashCardMapper.toFlashCard(request);
         Deck deck = deckRepository.findById(id)
@@ -43,5 +47,12 @@ public class FlashCardService {
         }
         flashCardRepository.deleteById(id);
         return "FlashCard has been deleted";
+    }
+
+    public List<FlashCardResponse> getAll(Long deckId) {
+        User user = currentUserService.getCurrentUser();
+        List<FlashCard> flashCards = flashCardRepository.findAllByDeck_IdAndDeck_User_Id(deckId, user.getId())
+                .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
+        return flashCards.stream().map(flashCardMapper::toFlashCardResponse).toList();
     }
 }

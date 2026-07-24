@@ -27,4 +27,6 @@ public class AuthenticationController {
     public String ping() {
         return "OK";
     }
+
+
 }

@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -29,6 +31,13 @@ public class FlashCardController {
                            @RequestBody @Valid FlashCardRequest request) {
         return ApiResponse.<FlashCardResponse>builder()
                 .result(flashCardService.updateFlashCard(id, request))
+                .build();
+    }
+
+    @GetMapping("/decks/{deckId}/cards")
+    public ApiResponse<List<FlashCardResponse>> getAllCards(@PathVariable("deckId") Long id) {
+        return ApiResponse.<List<FlashCardResponse>>builder()
+                .result(flashCardService.getAll(id))
                 .build();
     }
 
