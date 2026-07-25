@@ -1,5 +1,6 @@
 package com.hen.flastcard.configuration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,17 +26,14 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
     private final String[] PUBLIC_ENDPOINTS = {
-            "/api/users", "/api/auth/login"
+            "/api/users", "/api/auth/login", "/api/auth/logout"
     };
 
     @Value("${jwt.signerKey}")
     private String signerKey;
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
-    }
-
+    @Autowired
+    private CustomJwtDecoder customJwtDecoder;
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors(Customizer.withDefaults());
@@ -46,18 +44,18 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
         );
         httpSecurity.oauth2ResourceServer(oauth2 ->
-                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoder())));
+                oauth2.jwt(jwtConfigurer -> jwtConfigurer.decoder(customJwtDecoder)));
 
         return httpSecurity.build();
     }
 
-    @Bean
-    JwtDecoder jwtDecoder() {
-        SecretKeySpec keySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-        return NimbusJwtDecoder.withSecretKey(keySpec)
-                .macAlgorithm(MacAlgorithm.HS512)
-                .build();
-    }
+//    @Bean
+//    JwtDecoder jwtDecoder() {
+//        SecretKeySpec keySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
+//        return NimbusJwtDecoder.withSecretKey(keySpec)
+//                .macAlgorithm(MacAlgorithm.HS512)
+//                .build();
+//    }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
