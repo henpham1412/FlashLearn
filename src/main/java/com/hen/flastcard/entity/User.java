@@ -7,8 +7,7 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,11 +25,11 @@ public class User {
     String username;
     @Column(nullable = false, unique = true, length = 100)
     String email;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     String password;
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    LocalDate createdAt;
+    LocalDateTime createdAt;
     @OneToMany(mappedBy = "user")
     List<Deck> decks = new ArrayList<>();
 

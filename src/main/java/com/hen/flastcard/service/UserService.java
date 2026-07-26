@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,8 +26,11 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     CurrentUserService currentUserService;
+    @Transactional
     public UserResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        } else if (userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }
         User user = userMapper.toUser(request);
@@ -48,7 +52,7 @@ public class UserService {
                 .findAll().stream().map(userMapper::toUserResponse)
                 .toList();
     }
-
+    @Transactional
     public UserResponse updateUser(Long id, UserUpdationRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -56,7 +60,7 @@ public class UserService {
         userRepository.save(user);
         return userMapper.toUserResponse(user);
     }
-
+    @Transactional
     public String deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new AppException(ErrorCode.USER_NOT_EXISTED);
@@ -68,6 +72,7 @@ public class UserService {
     public UserResponse getMyInfo() {
         return userMapper.toUserResponse(currentUserService.getCurrentUser());
     }
+    @Transactional
     public UserResponse updateUser(UserUpdationRequest request) {
         User user = currentUserService.getCurrentUser();
         userMapper.updateUser(user, request);

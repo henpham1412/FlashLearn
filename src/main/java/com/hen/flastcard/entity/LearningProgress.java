@@ -3,11 +3,10 @@ package com.hen.flastcard.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -17,6 +16,7 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "card_id"})})
 public class LearningProgress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,22 +32,22 @@ public class LearningProgress {
     Integer repetition;
 
     @Column(name = "last_review_date", nullable = true)
-    LocalDate lastReviewDate;
+    LocalDateTime lastReviewDate;
     @Column(nullable = false, name = "next_review_date")
-    LocalDate nextReviewDate;
+    LocalDateTime nextReviewDate;
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    LocalDate createdAt;
+    LocalDateTime createdAt;
     // config auditing later
 //    @CreatedBy
 //    @Column(name = "created_by", nullable = false, updatable = false)
 //    String createBy;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "card_id", nullable = false)
     FlashCard flashCard;
 }

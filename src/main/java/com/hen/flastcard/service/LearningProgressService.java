@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +24,8 @@ public class LearningProgressService {
                 .repetition(0)
                 .easeFactor(2.5)
                 .lastReviewDate(null)
-                .nextReviewDate(LocalDate.now())
+                .nextReviewDate(LocalDateTime.now())
                 .build();
-        return learningProgressRepository.save(progress);
+        return progress;
     }
 }

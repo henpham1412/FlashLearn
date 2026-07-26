@@ -14,6 +14,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,34 +26,33 @@ public class FlashCardService {
     DeckRepository deckRepository;
     FlashCardMapper flashCardMapper;
     CurrentUserService currentUserService;
-    public FlashCardResponse createFalshCard(Long id, FlashCardRequest request) {
+    @Transactional
+    public FlashCardResponse createFlashCard(Long id, FlashCardRequest request) {
         FlashCard flashCard = flashCardMapper.toFlashCard(request);
-        Deck deck = deckRepository.findById(id)
+        Deck deck = deckRepository.findByIdAndUser_Id(id, currentUserService.getCurrentUser().getId())
                 .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
         flashCard.setDeck(deck);
         return flashCardMapper.toFlashCardResponse(flashCardRepository.save(flashCard));
     }
-
+    @Transactional
     public FlashCardResponse updateFlashCard(Long id, FlashCardRequest request) {
-        FlashCard flashCard = flashCardRepository.findById(id)
+        FlashCard flashCard = flashCardRepository.findByIdAndDeck_User_Id(id, currentUserService.getCurrentUser().getId())
                 .orElseThrow(() -> new AppException(ErrorCode.FLASHCARD_NOT_EXISTED));
         flashCardMapper.updateFlashCard(flashCard, request);
         flashCardRepository.save(flashCard);
         return flashCardMapper.toFlashCardResponse(flashCard);
     }
-
+    @Transactional
     public String deleteFlashCard(Long id) {
-        if (!flashCardRepository.existsById(id)) {
-            throw new AppException(ErrorCode.FLASHCARD_NOT_EXISTED);
-        }
-        flashCardRepository.deleteById(id);
+        FlashCard flashCard = flashCardRepository.findByIdAndDeck_User_Id(id, currentUserService.getCurrentUser().getId())
+                .orElseThrow(() -> new AppException(ErrorCode.FLASHCARD_NOT_EXISTED));
+        flashCardRepository.delete(flashCard);
         return "FlashCard has been deleted";
     }
 
     public List<FlashCardResponse> getAll(Long deckId) {
         User user = currentUserService.getCurrentUser();
-        List<FlashCard> flashCards = flashCardRepository.findAllByDeck_IdAndDeck_User_Id(deckId, user.getId())
-                .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
+        List<FlashCard> flashCards = flashCardRepository.findAllByDeck_IdAndDeck_User_Id(deckId, user.getId());
         return flashCards.stream().map(flashCardMapper::toFlashCardResponse).toList();
     }
 }

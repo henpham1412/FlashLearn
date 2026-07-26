@@ -27,11 +27,6 @@ public class AuthenticationController {
                 .build();
     }
 
-    @GetMapping("/ping")
-    public String ping() {
-        return "OK";
-    }
-
     @PostMapping("/auth/logout")
     ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authenticationService.logout(request);

@@ -22,7 +22,7 @@ public class FlashCardController {
     public ApiResponse<FlashCardResponse> createFlashCard(@PathVariable("deckId") Long id,
             @RequestBody @Valid FlashCardRequest request) {
         return ApiResponse.<FlashCardResponse>builder()
-                .result(flashCardService.createFalshCard(id, request))
+                .result(flashCardService.createFlashCard(id, request))
                 .build();
     }
 

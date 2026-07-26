@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class Deck {
 
     @Column(nullable = false, length = 200)
     String description;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     User user;
 
@@ -38,6 +38,6 @@ public class Deck {
     List<FlashCard> flashCards = new ArrayList<>();
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    LocalDate createdAt;
+    LocalDateTime createdAt;
 
 }

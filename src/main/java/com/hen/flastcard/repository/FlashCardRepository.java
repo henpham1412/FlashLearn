@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface FlashCardRepository extends JpaRepository<FlashCard, Long> {
     List<FlashCard> findAllByDeck_Id(Long id);
-    Optional<List<FlashCard>> findAllByDeck_IdAndDeck_User_Id(Long deckId, Long userId);
+    List<FlashCard> findAllByDeck_IdAndDeck_User_Id(Long deckId, Long userId);
+    Optional<FlashCard> findByIdAndDeck_User_Id(Long cardId, Long userId);
 }

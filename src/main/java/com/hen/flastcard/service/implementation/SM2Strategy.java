@@ -9,6 +9,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -34,7 +36,7 @@ public class SM2Strategy implements SpacedRepetitionStrategy {
             progress.setRepetition(0);
             progress.setReviewInterval(1);
         }
-        LocalDate today = LocalDate.now();
+        LocalDateTime today = LocalDateTime.now();
         progress.setNextReviewDate(today.plusDays(progress.getReviewInterval()));
         progress.setLastReviewDate(today);
     }

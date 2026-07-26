@@ -18,8 +18,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -43,16 +44,13 @@ public class StudyService {
         return progressMap;
     }
 
-    private void initializeMissingProgress(User user, FlashCard card) {
-        learningProgressService.initializeProgress(user, card);
-    }
-
     private boolean isDue(LearningProgress progress) {
-        return !progress.getNextReviewDate().isAfter(LocalDate.now());
+        return !progress.getNextReviewDate().isAfter(LocalDateTime.now());
     }
-
+    @Transactional
     public List<StudyCardResponse> loadStudyCards(Long id) {
         List<StudyCardResponse> studyCardResponses = new ArrayList<>();
+        List<LearningProgress> progresses = new ArrayList<>();
         User user = currentUserService.getCurrentUser();
         Deck deck = deckRepository.findByIdAndUser_Id(id ,user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
@@ -61,7 +59,7 @@ public class StudyService {
         for (FlashCard card: flashCards) {
             if (!progressMap.containsKey(card.getId())) {
                 // optimize: create a list to store progress then user saveAll to avoid multiple insert to db
-                initializeMissingProgress(user, card);
+                progresses.add(learningProgressService.initializeProgress(user, card));
                 studyCardResponses.add(studyMapper.toStudyCardResponse(card));
             } else {
                 LearningProgress progress = progressMap.get(card.getId());
@@ -71,9 +69,10 @@ public class StudyService {
                 }
             }
         }
+        learningProgressRepository.saveAll(progresses);
         return studyCardResponses;
     }
-
+    @Transactional
     public ReviewResponse reviewCard(ReviewRequest request) {
         User user = currentUserService.getCurrentUser();
         LearningProgress progress = learningProgressRepository

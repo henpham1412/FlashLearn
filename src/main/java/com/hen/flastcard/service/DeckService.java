@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class DeckService {
     DeckRepository deckRepository;
     DeckMapper deckMapper;
     CurrentUserService currentUserService;
-
+    @Transactional
     public DeckResponse createDeck(DeckRequest request) {
         Deck deck = deckMapper.toDeck(request);
         deck.setUser(currentUserService.getCurrentUser());
@@ -34,24 +35,25 @@ public class DeckService {
     }
 
     public DeckResponse getById(Long id) {
-        Deck deck = deckRepository.findById(id)
+        Deck deck = deckRepository.findByIdAndUser_Id(id, currentUserService.getCurrentUser().getId())
                 .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
         return deckMapper.toDeckResponse(deck);
     }
-
+    @Transactional
     public DeckResponse updateDeck(Long id, DeckRequest request) {
-        Deck deck = deckRepository.findById(id)
+        Deck deck = deckRepository.findByIdAndUser_Id(id, currentUserService.getCurrentUser().getId())
                 .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
         deckMapper.updateDeck(deck, request);
+        // Dirty checking: spring can detect the change and auto generate sql to update (with @Transactional)
+        // so you can remove this line
         deckRepository.save(deck);
         return deckMapper.toDeckResponse(deck);
     }
-
+    @Transactional
     public String deleteDeck(Long id) {
-        if (!deckRepository.existsById(id)) {
-            throw new AppException(ErrorCode.DECK_NOT_EXISTED);
-        }
-        deckRepository.deleteById(id);
+        Deck deck = deckRepository.findByIdAndUser_Id(id, currentUserService.getCurrentUser().getId())
+                .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
+        deckRepository.delete(deck);
         return "Deck has been deleted";
     }
 }
