@@ -55,4 +55,18 @@ public class UserController {
                 .result(userService.deleteUser(id))
                 .build();
     }
+
+    @GetMapping("/me")
+    public ApiResponse<UserResponse> getMyInfo() {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.getMyInfo())
+                .build();
+    }
+
+    @PutMapping("/me")
+    public ApiResponse<UserResponse> updateUser(@RequestBody @Valid UserUpdationRequest request) {
+        return ApiResponse.<UserResponse>builder()
+                .result(userService.updateUser(request))
+                .build();
+    }
 }

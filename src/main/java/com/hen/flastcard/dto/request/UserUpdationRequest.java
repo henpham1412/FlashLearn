@@ -12,10 +12,11 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserUpdationRequest {
-    @NotBlank(message = "EMAIL_REQUIRED")
-    @Email(message = "EMAIL_INVALID")
-    String email;
-    @NotBlank(message = "PASSWORD_REQUIRED")
-    @Size(min = 6, message = "PASSWORD_INVALID")
-    String password;
+    @NotBlank(message = "USERNAME_REQUIRED")
+    @Size(min = 4, message = "USERNAME_INVALID")
+    String username;
+
+//    @NotBlank(message = "PASSWORD_REQUIRED")
+//    @Size(min = 6, message = "PASSWORD_INVALID")
+//    String password;
 }

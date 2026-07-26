@@ -24,6 +24,7 @@ public class UserService {
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
+    CurrentUserService currentUserService;
     public UserResponse createUser(UserCreationRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTED);
@@ -62,5 +63,15 @@ public class UserService {
         }
         userRepository.deleteById(id);
         return "User has been deleted";
+    }
+
+    public UserResponse getMyInfo() {
+        return userMapper.toUserResponse(currentUserService.getCurrentUser());
+    }
+    public UserResponse updateUser(UserUpdationRequest request) {
+        User user = currentUserService.getCurrentUser();
+        userMapper.updateUser(user, request);
+        userRepository.save(user);
+        return userMapper.toUserResponse(user);
     }
 }

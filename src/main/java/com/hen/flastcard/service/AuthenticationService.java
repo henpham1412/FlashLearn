@@ -95,7 +95,10 @@ public class AuthenticationService {
                 .id(jit)
                 .expiryTime(expiryTime)
                 .build();
-        invalidatedTokenRepository.save(invalidatedToken);
+        if(!invalidatedTokenRepository.existsById(jit)) {
+            invalidatedTokenRepository.save(invalidatedToken);
+        }
+
     }
 
 }
