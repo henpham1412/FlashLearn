@@ -25,8 +25,8 @@ public class FlashCard {
     @Column(nullable = false, length = 100)
     String word;
 
-    @Column(nullable = false, length = 100)
-    String hiraKata;
+    @Column(name = "hira_kata", nullable = false, length = 100)
+    String hira_kata;
 
     @Column(nullable = false, length = 100)
     String meaning;
