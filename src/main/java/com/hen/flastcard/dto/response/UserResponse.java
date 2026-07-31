@@ -4,6 +4,8 @@ package com.hen.flastcard.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,4 +15,6 @@ public class UserResponse {
     Long id;
     String username;
     String email;
+    // tmp;
+    Set<String> roles;
 }

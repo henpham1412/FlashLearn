@@ -47,7 +47,7 @@ public class AuthenticationService {
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        var token = jwtService.generateToken(request.getEmail());
+        var token = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(token)
                 .authenticated(true)
