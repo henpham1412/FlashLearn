@@ -30,5 +30,3 @@ logs/
 
 # Environment
 .env
-
-src/main/resources/application.yaml

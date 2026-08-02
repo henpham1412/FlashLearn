@@ -1,0 +1,25 @@
+services:
+  mysql:
+    image: mysql:8.0.36-debian
+    container_name: mysql-fc
+    ports:
+      - "3307:3306" # Mở cổng 3308 để bạn có thể dùng Workbench kết nối vào
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DBMS_PASSWORD:-root}
+      MYSQL_DATABASE: flashcard_service
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  identity-service:
+    image:  henpham1412/flashcard-service:0.2.0
+    container_name: flashcard-service
+    ports:
+      - "8080:8080" # <-- Chuyển request từ cổng 80 của server vào cổng 8080 của App
+    environment:
+      DBMS_CONNECTION: jdbc:mysql://mysql:3306/flashcard_service
+    depends_on:
+      mysql:
+        condition: service_healthy

@@ -1,0 +1,27 @@
+server:
+  port: 8080
+  forward-headers-strategy: framework
+  servlet:
+    context-path: /flashcard
+
+
+spring:
+  application:
+    name: flastcard
+  datasource:
+    url: ${DBMS_CONNECTION:jdbc:mysql://localhost:3307/flastcard_service}
+    username: ${DBMS_USERNAME:root}
+    password: ${DBMS_PASSWORD:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+jwt:
+  signerKey: "d9f171a418ef107b63d2f49e8ac54ad234d15ef3d91b951da896c984b0e0d9d5"
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173,http://localhost:4173,https://henflashcard.eu.cc,https://www.henflashcard.eu.cc
