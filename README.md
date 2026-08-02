@@ -41,15 +41,11 @@
 
 ```mermaid
 graph LR
-    Client["💻 React Frontend"]
-        -->|"Axios REST API"|
-    Cloudflare["☁️ Cloudflare"]
+    Client["💻 React Frontend"] -->|"Axios REST API"| Cloudflare["☁️ Cloudflare"]
 
-    Cloudflare
-        -->|"HTTPS"|
-    Backend["⚙️ Spring Boot API"]
+    Cloudflare -->|"HTTPS"| Backend["⚙️ Spring Boot API"]
 
-    subgraph AWS EC2
+    subgraph "AWS EC2"
         Backend --> Security["🛡️ Spring Security (JWT)"]
         Backend --> JPA["📦 Spring Data JPA / Hibernate"]
         JPA --> DB[("🗄️ MySQL")]
