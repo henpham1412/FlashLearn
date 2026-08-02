@@ -14,7 +14,7 @@ services:
       retries: 5
 
   identity-service:
-    image:  henpham1412/flashcard-service:0.2.0
+    image:  henpham1412/flashcard-service:latest
     container_name: flashcard-service
     ports:
       - "8080:8080" # <-- Chuyển request từ cổng 80 của server vào cổng 8080 của App
