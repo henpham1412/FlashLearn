@@ -32,6 +32,7 @@ public enum ErrorCode {
     CARD_ID_REQUIRED(1018,"you must have a cardId", HttpStatus.BAD_REQUEST),
     QUALITY_INVALID(1019, "your quality is invalid", HttpStatus.BAD_REQUEST),
     PROGRESS_NOT_EXISTED(1020, "progress has not been existed" , HttpStatus.NOT_FOUND),
+    UNAUTHORIZED(1021, "you don't have permission", HttpStatus.FORBIDDEN)
     ;
     int code;
     String message;
