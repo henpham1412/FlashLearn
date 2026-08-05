@@ -32,7 +32,12 @@ public enum ErrorCode {
     CARD_ID_REQUIRED(1018,"you must have a cardId", HttpStatus.BAD_REQUEST),
     QUALITY_INVALID(1019, "your quality is invalid", HttpStatus.BAD_REQUEST),
     PROGRESS_NOT_EXISTED(1020, "progress has not been existed" , HttpStatus.NOT_FOUND),
-    UNAUTHORIZED(1021, "you don't have permission", HttpStatus.FORBIDDEN)
+    UNAUTHORIZED(1021, "you don't have permission", HttpStatus.FORBIDDEN),
+    PERMISSION_NAME_REQUIRED(1022, "you must have a permission's name", HttpStatus.BAD_REQUEST),
+    PERMISSION_DESC_REQUIRED(1023, "you must have a permission description", HttpStatus.BAD_REQUEST),
+    ROLE_NAME_REQUIRED(1024, "you must have a role's name", HttpStatus.BAD_REQUEST),
+    ROLE_DESC_REQUIRED(1025, "you must have a role description", HttpStatus.BAD_REQUEST),
+    PERMISSIONS_REQUIRED(1026, "Each role must have permissions", HttpStatus.BAD_REQUEST),
     ;
     int code;
     String message;
