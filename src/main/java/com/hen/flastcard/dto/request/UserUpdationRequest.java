@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,4 +21,5 @@ public class UserUpdationRequest {
 //    @NotBlank(message = "PASSWORD_REQUIRED")
 //    @Size(min = 6, message = "PASSWORD_INVALID")
 //    String password;
+    List<String> roles;
 }

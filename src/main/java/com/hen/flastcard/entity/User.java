@@ -38,5 +38,6 @@ public class User {
     @OneToMany(mappedBy = "user")
     List<LearningProgress> learningProgresses = new ArrayList<>();
 
-    Set<String> roles;
+    @ManyToMany
+    Set<Role> roles;
 }
