@@ -15,6 +15,7 @@ public class GlobalException {
     private final String MIN_ATTRIBUTE = "min";
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException ex) {
+        ex.printStackTrace();
         ApiResponse<Object> response = new ApiResponse<>();
         response.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
         response.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
