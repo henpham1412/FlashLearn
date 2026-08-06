@@ -38,6 +38,7 @@ public enum ErrorCode {
     ROLE_NAME_REQUIRED(1024, "you must have a role's name", HttpStatus.BAD_REQUEST),
     ROLE_DESC_REQUIRED(1025, "you must have a role description", HttpStatus.BAD_REQUEST),
     PERMISSIONS_REQUIRED(1026, "Each role must have permissions", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_EXISTED(1027, "role has not been existed" , HttpStatus.NOT_FOUND),
     ;
     int code;
     String message;

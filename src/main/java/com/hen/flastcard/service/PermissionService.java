@@ -9,7 +9,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -20,16 +22,19 @@ import java.util.List;
 public class PermissionService {
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
+    @PreAuthorize("hasAuthority('PERMISSION_CREATE')")
+    @Transactional
     public PermissionResponse create(PermissionRequest request) {
         Permission permission = permissionMapper.toPermission(request);
         permissionRepository.save(permission);
         return permissionMapper.toPermissionResponse(permission);
     }
-
+    @PreAuthorize("hasAuthority('PERMISSION_GET_ALL')")
     public List<PermissionResponse> getALl() {
         return permissionRepository.findAll().stream().map(permissionMapper::toPermissionResponse).toList();
     }
-
+    @PreAuthorize("hasAuthority('PERMISSION_DELETE')")
+    @Transactional
     public void delete(String permission) {
         permissionRepository.deleteById(permission);
     }
