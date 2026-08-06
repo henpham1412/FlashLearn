@@ -2,7 +2,9 @@ package com.hen.flastcard.exception;
 
 import com.hen.flastcard.dto.response.ApiResponse;
 import jakarta.validation.ConstraintViolation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,10 +13,12 @@ import java.util.Map;
 import java.util.Objects;
 
 @ControllerAdvice
+@Slf4j
 public class GlobalException {
     private final String MIN_ATTRIBUTE = "min";
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException ex) {
+        log.error("Exception: ", ex);
         ApiResponse<Object> response = new ApiResponse<>();
         response.setCode(ErrorCode.UNCATEGORIZED_EXCEPTION.getCode());
         response.setMessage(ErrorCode.UNCATEGORIZED_EXCEPTION.getMessage());
@@ -27,7 +31,17 @@ public class GlobalException {
         ErrorCode errorCode = ex.getErrorCode();
         response.setCode(errorCode.getCode());
         response.setMessage(errorCode.getMessage());
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(response);
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ResponseEntity<ApiResponse> handlingAccessDeniedException(AccessDeniedException ex) {
+        ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
+        return ResponseEntity.status(errorCode.getHttpStatusCode())
+                .body(ApiResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
     }
 
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
