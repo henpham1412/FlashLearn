@@ -60,7 +60,7 @@ public class UserService {
 
         return userMapper.toUserResponse(user);
     }
-    @PostAuthorize("returnObject.email == authentication.name")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserResponse getUserById(Long id) {
         log.info(SecurityContextHolder.getContext().getAuthentication().getName());
         return userMapper.toUserResponse(
@@ -80,7 +80,7 @@ public class UserService {
                 .toList();
     }
 
-    @PreAuthorize("@userSecurity.isOwner(#id)")
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public UserResponse updateUser(Long id, UserUpdationRequest request) {
         User user = userRepository.findById(id)
