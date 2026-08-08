@@ -23,7 +23,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/users", "/api/auth/login", "/api/auth/logout"
+            "/api/users", "/api/auth/login", "/api/auth/logout", "/api/auth/refresh"
     };
     @Value("${app.cors.allowed-origins}")
     private List<String> allowedOrigins;
