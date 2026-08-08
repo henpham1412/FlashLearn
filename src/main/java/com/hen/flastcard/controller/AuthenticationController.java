@@ -2,8 +2,10 @@ package com.hen.flastcard.controller;
 
 import com.hen.flastcard.dto.request.AuthenticationRequest;
 import com.hen.flastcard.dto.request.LogoutRequest;
+import com.hen.flastcard.dto.request.RefreshRequest;
 import com.hen.flastcard.dto.response.ApiResponse;
 import com.hen.flastcard.dto.response.AuthenticationResponse;
+import com.hen.flastcard.dto.response.RefreshResponse;
 import com.hen.flastcard.service.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 import jakarta.validation.Valid;
@@ -31,6 +33,13 @@ public class AuthenticationController {
     ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
         authenticationService.logout(request);
         return ApiResponse.<Void>builder()
+                .build();
+    }
+
+    @PostMapping("/auth/refresh")
+    ApiResponse<RefreshResponse> refresh(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        return ApiResponse.<RefreshResponse>builder()
+                .result(authenticationService.refresh(request))
                 .build();
     }
 
