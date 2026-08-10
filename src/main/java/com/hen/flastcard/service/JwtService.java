@@ -9,6 +9,8 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +23,7 @@ import org.springframework.util.CollectionUtils;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
@@ -41,6 +44,10 @@ public class JwtService {
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
+
+    @NonFinal
+    @Value("${app.cookie.name}")
+    protected String cookieName;
 
     InvalidatedTokenRepository invalidatedTokenRepository;
 
@@ -134,5 +141,15 @@ public class JwtService {
         }
 
         return signedJWT;
+    }
+
+    public String getRefreshToken(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> cookieName.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst().orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
     }
 }

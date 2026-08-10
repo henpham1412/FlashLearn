@@ -75,8 +75,8 @@ public class AuthenticationService {
 
     }
 
-    public void logout(LogoutRequest request) throws ParseException, JOSEException {
-        var signToken = jwtService.verifyRefreshToken(request.getToken());
+    public void logout(String refreshToken) throws ParseException, JOSEException {
+        var signToken = jwtService.verifyRefreshToken(refreshToken);
         String jit = signToken.getJWTClaimsSet().getJWTID();
         Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
@@ -89,9 +89,9 @@ public class AuthenticationService {
 
     }
     @Transactional
-    public RefreshResponse refresh(RefreshRequest request) throws ParseException, JOSEException {
+    public RefreshResponse refresh(String refreshToken) throws ParseException, JOSEException {
         // verify refresh token
-        SignedJWT signedJWT = jwtService.verifyRefreshToken(request.getRefreshToken());
+        SignedJWT signedJWT = jwtService.verifyRefreshToken(refreshToken);
 
         // revoke old refresh token
         var jit = signedJWT.getJWTClaimsSet().getJWTID();
@@ -108,10 +108,10 @@ public class AuthenticationService {
                 () -> new AppException(ErrorCode.UNAUTHENTICATED)
         );
         var accessToken = jwtService.generateAccessToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
+        var newRefreshToken = jwtService.generateRefreshToken(user);
         return RefreshResponse.builder()
                 .accessToken(accessToken)
-                .refreshToken(refreshToken)
+                .refreshToken(newRefreshToken)
                 .build();
 
     }
