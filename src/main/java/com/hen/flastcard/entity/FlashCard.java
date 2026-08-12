@@ -41,6 +41,7 @@ public class FlashCard {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "deck_id")
     Deck deck;
-    @OneToMany(mappedBy = "flashCard")
+    @OneToMany(mappedBy = "flashCard", cascade = CascadeType.ALL,
+            orphanRemoval = true)
     List<LearningProgress> learningProgresses = new ArrayList<>();
 }

@@ -3,8 +3,10 @@ package com.hen.flastcard.service;
 import com.hen.flastcard.dto.request.AuthenticationRequest;
 import com.hen.flastcard.dto.request.IntrospectRequest;
 import com.hen.flastcard.dto.request.LogoutRequest;
+import com.hen.flastcard.dto.request.RefreshRequest;
 import com.hen.flastcard.dto.response.AuthenticationResponse;
 import com.hen.flastcard.dto.response.IntrospectResponse;
+import com.hen.flastcard.dto.response.RefreshResponse;
 import com.hen.flastcard.entity.InvalidatedToken;
 import com.hen.flastcard.exception.AppException;
 import com.hen.flastcard.exception.ErrorCode;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -47,9 +50,11 @@ public class AuthenticationService {
         if (!authenticated) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        var token = jwtService.generateToken(user);
+        var accessToken = jwtService.generateAccessToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
         return AuthenticationResponse.builder()
-                .token(token)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .authenticated(true)
                 .build();
     }
@@ -59,7 +64,7 @@ public class AuthenticationService {
         boolean isValid = true;
 
         try {
-            verifyToken(token);
+            jwtService.verifyAccessToken(token);
         } catch (AppException e) {
             isValid = false;
         }
@@ -70,26 +75,8 @@ public class AuthenticationService {
 
     }
 
-    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
-        JWSVerifier verifier = new MACVerifier(SIGNED_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        var verified = signedJWT.verify(verifier);
-        if (!(verified && expiryTime.after(new Date()))) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-
-        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-
-        return signedJWT;
-    }
-
-    public void logout(LogoutRequest request) throws ParseException, JOSEException {
-        var signToken = verifyToken(request.getToken());
+    public void logout(String refreshToken) throws ParseException, JOSEException {
+        var signToken = jwtService.verifyRefreshToken(refreshToken);
         String jit = signToken.getJWTClaimsSet().getJWTID();
         Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
@@ -101,5 +88,31 @@ public class AuthenticationService {
         }
 
     }
+    @Transactional
+    public RefreshResponse refresh(String refreshToken) throws ParseException, JOSEException {
+        // verify refresh token
+        SignedJWT signedJWT = jwtService.verifyRefreshToken(refreshToken);
 
+        // revoke old refresh token
+        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        // generate new access token
+        var email = signedJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByEmail(email).orElseThrow(
+                () -> new AppException(ErrorCode.UNAUTHENTICATED)
+        );
+        var accessToken = jwtService.generateAccessToken(user);
+        var newRefreshToken = jwtService.generateRefreshToken(user);
+        return RefreshResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken)
+                .build();
+
+    }
 }
