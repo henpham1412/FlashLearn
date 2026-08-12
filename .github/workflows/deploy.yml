@@ -3,7 +3,7 @@ name: Deploy Backend to AWS EC2
 on:
   push:
     branches:
-      - main # Kịch bản này chỉ chạy khi bạn đẩy code lên nhánh main
+      - main # the script only run when push code on main
 
 jobs:
   build-and-deploy:
@@ -12,15 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      # Thêm 2 bước này để robot tạo ra file .jar trước
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -44,3 +35,4 @@ jobs:
           script: |
             sudo docker compose pull
             sudo docker compose up -d --force-recreate
+            sudo docker image prune -a -f
