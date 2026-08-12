@@ -22,8 +22,8 @@ spring:
         format_sql: true
 jwt:
   signerKey: "d9f171a418ef107b63d2f49e8ac54ad234d15ef3d91b951da896c984b0e0d9d5"
-  valid-duration: 900 # = 15'
-  refreshable-duration: 604800 # = 7 Days
+  valid-duration: 20 # in seconds
+  refreshable-duration: 120 # in seconds
 app:
   cors:
     allowed-origins: http://localhost:5173,http://localhost:4173,https://henflashcard.eu.cc,https://www.henflashcard.eu.cc
