@@ -1,15 +1,15 @@
 package com.hen.flastcard.service.implementation;
 
+import java.time.LocalDateTime;
+
+import org.springframework.stereotype.Service;
+
 import com.hen.flastcard.entity.LearningProgress;
-import com.hen.flastcard.repository.LearningProgressRepository;
 import com.hen.flastcard.service.SpacedRepetitionStrategy;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -21,15 +21,14 @@ public class SM2Strategy implements SpacedRepetitionStrategy {
         Integer reviewInterval = progress.getReviewInterval();
         Double easeFactor = progress.getEaseFactor();
 
-        Double newFactor = (Double) (easeFactor + (0.1 - (5 - quality)*(0.08 + (5 - quality) * 0.02)));
+        Double newFactor = (Double) (easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
         newFactor = Math.max(newFactor, 1.3);
         progress.setEaseFactor(newFactor);
         if (quality >= 3) {
             switch (repetition) {
                 case 0 -> progress.setReviewInterval(1);
                 case 1 -> progress.setReviewInterval(6);
-                default ->
-                    progress.setReviewInterval((int) Math.round(reviewInterval * newFactor));
+                default -> progress.setReviewInterval((int) Math.round(reviewInterval * newFactor));
             }
             progress.setRepetition(repetition + 1);
         } else {

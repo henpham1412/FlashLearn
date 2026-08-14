@@ -1,17 +1,20 @@
 package com.hen.flastcard.controller;
 
+import java.util.List;
+
+import jakarta.validation.Valid;
+
+import org.springframework.web.bind.annotation.*;
+
 import com.hen.flastcard.dto.request.UserCreationRequest;
 import com.hen.flastcard.dto.request.UserUpdationRequest;
 import com.hen.flastcard.dto.response.ApiResponse;
 import com.hen.flastcard.dto.response.UserResponse;
 import com.hen.flastcard.service.UserService;
-import jakarta.validation.Valid;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -42,8 +45,8 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public ApiResponse<UserResponse> updateUser(@PathVariable("userId") Long id,
-                                                 @RequestBody @Valid UserUpdationRequest request) {
+    public ApiResponse<UserResponse> updateUser(
+            @PathVariable("userId") Long id, @RequestBody @Valid UserUpdationRequest request) {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.updateUser(id, request))
                 .build();
@@ -51,9 +54,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     public ApiResponse<String> deleteUser(@PathVariable("userId") Long id) {
-        return ApiResponse.<String>builder()
-                .result(userService.deleteUser(id))
-                .build();
+        return ApiResponse.<String>builder().result(userService.deleteUser(id)).build();
     }
 
     @GetMapping("/me")

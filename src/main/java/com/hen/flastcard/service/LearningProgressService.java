@@ -1,21 +1,24 @@
 package com.hen.flastcard.service;
 
+import java.time.LocalDateTime;
+
+import org.springframework.stereotype.Service;
+
 import com.hen.flastcard.entity.FlashCard;
 import com.hen.flastcard.entity.LearningProgress;
 import com.hen.flastcard.entity.User;
 import com.hen.flastcard.repository.LearningProgressRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LearningProgressService {
     LearningProgressRepository learningProgressRepository;
+
     public LearningProgress initializeProgress(User user, FlashCard flashCard) {
         LearningProgress progress = LearningProgress.builder()
                 .user(user)

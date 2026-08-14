@@ -1,12 +1,12 @@
 package com.hen.flastcard.dto.request;
 
-import jakarta.validation.constraints.Email;
+import java.util.List;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -18,8 +18,8 @@ public class UserUpdationRequest {
     @Size(min = 4, message = "USERNAME_INVALID")
     String username;
 
-//    @NotBlank(message = "PASSWORD_REQUIRED")
-//    @Size(min = 6, message = "PASSWORD_INVALID")
-//    String password;
+    //    @NotBlank(message = "PASSWORD_REQUIRED")
+    //    @Size(min = 6, message = "PASSWORD_INVALID")
+    //    String password;
     List<String> roles;
 }

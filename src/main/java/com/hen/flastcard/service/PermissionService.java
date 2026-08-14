@@ -1,19 +1,21 @@
 package com.hen.flastcard.service;
 
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hen.flastcard.dto.request.PermissionRequest;
 import com.hen.flastcard.dto.response.PermissionResponse;
 import com.hen.flastcard.entity.Permission;
 import com.hen.flastcard.mapper.PermissionMapper;
 import com.hen.flastcard.repository.PermissionRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +24,7 @@ import java.util.List;
 public class PermissionService {
     PermissionRepository permissionRepository;
     PermissionMapper permissionMapper;
+
     @PreAuthorize("hasAuthority('PERMISSION_CREATE')")
     @Transactional
     public PermissionResponse create(PermissionRequest request) {
@@ -29,10 +32,14 @@ public class PermissionService {
         permissionRepository.save(permission);
         return permissionMapper.toPermissionResponse(permission);
     }
+
     @PreAuthorize("hasAuthority('PERMISSION_GET_ALL')")
     public List<PermissionResponse> getALl() {
-        return permissionRepository.findAll().stream().map(permissionMapper::toPermissionResponse).toList();
+        return permissionRepository.findAll().stream()
+                .map(permissionMapper::toPermissionResponse)
+                .toList();
     }
+
     @PreAuthorize("hasAuthority('PERMISSION_DELETE')")
     @Transactional
     public void delete(String permission) {

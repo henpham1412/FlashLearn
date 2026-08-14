@@ -12,5 +12,5 @@ public class DeckResponse {
     Long id;
     String name;
     String description;
-//    int cardCount;
+    //    int cardCount;
 }

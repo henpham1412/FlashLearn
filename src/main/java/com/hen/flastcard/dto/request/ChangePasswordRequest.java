@@ -2,6 +2,7 @@ package com.hen.flastcard.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 public class ChangePasswordRequest {
     @NotBlank(message = "PASSWORD_REQUIRED")
     String oldPassword;
+
     @NotBlank(message = "PASSWORD_REQUIRED")
     @Size(min = 6, message = "PASSWORD_INVALID")
     String newPassword;
