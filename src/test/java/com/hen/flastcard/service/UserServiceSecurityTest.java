@@ -1,6 +1,7 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.dto.request.UserUpdationRequest;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,7 +9,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.hen.flastcard.dto.request.UserUpdationRequest;
 
 @SpringBootTest
 @TestPropertySource("/test.properties")
@@ -31,18 +32,13 @@ public class UserServiceSecurityTest {
     @Test
     @WithMockUser(roles = "USER")
     void updateUser_nonJWT_notAdmin_fail() {
-        var request = UserUpdationRequest.builder()
-                .username("john")
-                .build();
+        var request = UserUpdationRequest.builder().username("john").build();
         assertThrows(AuthorizationDeniedException.class, () -> userService.updateUser(1L, request));
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void getUserById_notAdmin_fail() {
-        assertThrows(
-                AuthorizationDeniedException.class,
-                () -> userService.getUserById(1L)
-        );
+        assertThrows(AuthorizationDeniedException.class, () -> userService.getUserById(1L));
     }
 }

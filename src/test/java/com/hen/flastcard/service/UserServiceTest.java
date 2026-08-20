@@ -74,7 +74,10 @@ class UserServiceTest {
                 .email("john@gmail.com")
                 .build();
 
-        user = User.builder().id(1L).username("john").email("john@gmail.com")
+        user = User.builder()
+                .id(1L)
+                .username("john")
+                .email("john@gmail.com")
                 .password("12345678")
                 .build();
         user2 = User.builder().id(2L).username("alice").email("alice@gmail.com").build();
@@ -94,8 +97,7 @@ class UserServiceTest {
         when(userMapper.toUserResponse(user)).thenReturn(userResponse);
         // WHEN
         var response = userService.getMyInfo();
-        Assertions.assertThat(response)
-                .isEqualTo(userResponse);
+        Assertions.assertThat(response).isEqualTo(userResponse);
         verify(currentUserService).getCurrentUser();
         verify(userMapper).toUserResponse(user);
     }
@@ -126,8 +128,7 @@ class UserServiceTest {
 
         var response = userService.updateUser(userUpdationRequest);
 
-        Assertions.assertThat(response)
-                .isEqualTo(userResponse);
+        Assertions.assertThat(response).isEqualTo(userResponse);
         verify(currentUserService).getCurrentUser();
         verify(userMapper).updateUser(user, userUpdationRequest);
         verify(userRepository).save(user);
@@ -147,8 +148,7 @@ class UserServiceTest {
     void deleteUser_invalid_fail() {
         when(userRepository.existsById(1L)).thenReturn(false);
         var exception = assertThrows(AppException.class, () -> userService.deleteUser(1L));
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.USER_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_EXISTED);
         verify(userRepository).existsById(1L);
         verify(userRepository, never()).deleteById(any());
     }
@@ -161,8 +161,7 @@ class UserServiceTest {
 
         var response = userService.getAll();
 
-        Assertions.assertThat(response)
-                .containsExactly(userResponse, response2);
+        Assertions.assertThat(response).containsExactly(userResponse, response2);
         verify(userRepository).findAll();
         verify(userMapper).toUserResponse(user);
         verify(userMapper).toUserResponse(user2);
@@ -180,12 +179,11 @@ class UserServiceTest {
     @Test
     void updateUser_nonJWT_valid_success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(roleRepository.findAllById(userUpdationRequest.getRoles())).thenReturn( userRoles);
+        when(roleRepository.findAllById(userUpdationRequest.getRoles())).thenReturn(userRoles);
         when(userMapper.toUserResponse(user)).thenReturn(userResponse);
         var response = userService.updateUser(1L, userUpdationRequest);
         Assertions.assertThat(response).isEqualTo(userResponse);
-        Assertions.assertThat(user.getRoles())
-                .containsExactly(userRole);
+        Assertions.assertThat(user.getRoles()).containsExactly(userRole);
         verify(userRepository).findById(1L);
         verify(userMapper).updateUser(user, userUpdationRequest);
         verify(roleRepository).findAllById(userUpdationRequest.getRoles());
@@ -197,8 +195,7 @@ class UserServiceTest {
     void updateUser_nonJWT_invalid_fail() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
         var exception = assertThrows(AppException.class, () -> userService.updateUser(1L, userUpdationRequest));
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.USER_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_EXISTED);
         verify(userRepository).findById(1L);
         verify(userMapper, never()).updateUser(any(), any());
         verify(roleRepository, never()).findAllById(any());
@@ -209,8 +206,7 @@ class UserServiceTest {
     void createUser_valid_success() {
         when(userMapper.toUser(request)).thenReturn(user);
         when(roleRepository.findById(PredefinedRole.USER_ROLE)).thenReturn(Optional.of(userRole));
-        when(passwordEncoder.encode("12345678"))
-                .thenReturn("encoded-password");
+        when(passwordEncoder.encode("12345678")).thenReturn("encoded-password");
         when(userRepository.save(user)).thenReturn(user);
         when(userMapper.toUserResponse(user)).thenReturn(userResponse);
         var response = userService.createUser(request);
@@ -221,10 +217,8 @@ class UserServiceTest {
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
-        Assertions.assertThat(savedUser.getPassword())
-                .isEqualTo("encoded-password");
-        Assertions.assertThat(savedUser.getRoles())
-                .containsExactly(userRole);
+        Assertions.assertThat(savedUser.getPassword()).isEqualTo("encoded-password");
+        Assertions.assertThat(savedUser.getRoles()).containsExactly(userRole);
 
         verify(userMapper).toUserResponse(user);
         verify(roleRepository).findById(PredefinedRole.USER_ROLE);
@@ -235,18 +229,12 @@ class UserServiceTest {
     @Test
     void createUser_roleNotFound_fail() {
         when(userMapper.toUser(request)).thenReturn(user);
-        when(passwordEncoder.encode("12345678"))
-                .thenReturn("encoded-password");
-        when(roleRepository.findById(PredefinedRole.USER_ROLE))
-                .thenReturn(Optional.empty());
+        when(passwordEncoder.encode("12345678")).thenReturn("encoded-password");
+        when(roleRepository.findById(PredefinedRole.USER_ROLE)).thenReturn(Optional.empty());
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> userService.createUser(request)
-        );
+        var exception = assertThrows(AppException.class, () -> userService.createUser(request));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.ROLE_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.ROLE_NOT_EXISTED);
 
         verify(userMapper).toUser(request);
         verify(passwordEncoder).encode("12345678");
@@ -258,8 +246,7 @@ class UserServiceTest {
     @Test
     void createUser_userExist_fail() {
         when(userMapper.toUser(request)).thenReturn(user);
-        when(passwordEncoder.encode("12345678"))
-                .thenReturn("encoded-password");
+        when(passwordEncoder.encode("12345678")).thenReturn("encoded-password");
         when(roleRepository.findById(PredefinedRole.USER_ROLE)).thenReturn(Optional.of(userRole));
         when(userRepository.save(user)).thenThrow(new DataIntegrityViolationException("User already exists"));
         var exception = assertThrows(AppException.class, () -> userService.createUser(request));
