@@ -6,14 +6,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 
-import com.hen.flastcard.exception.ErrorCode;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -22,14 +17,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.hen.flastcard.entity.User;
 import com.hen.flastcard.exception.AppException;
+import com.hen.flastcard.exception.ErrorCode;
 import com.hen.flastcard.repository.UserRepository;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@TestPropertySource("/test.properties")
 public class CurrentUserServiceTest {
-    @Mock
+    @MockitoBean
     UserRepository userRepository;
 
-    @InjectMocks
+    @Autowired
     private CurrentUserService currentUserService;
 
     private User user;
@@ -61,7 +58,6 @@ public class CurrentUserServiceTest {
 
         //  WHEN, THEN
         var exception = assertThrows(AppException.class, () -> currentUserService.getCurrentUser());
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.USER_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_EXISTED);
     }
 }
