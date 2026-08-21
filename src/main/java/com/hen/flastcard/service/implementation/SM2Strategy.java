@@ -21,7 +21,7 @@ public class SM2Strategy implements SpacedRepetitionStrategy {
         Integer reviewInterval = progress.getReviewInterval();
         Double easeFactor = progress.getEaseFactor();
 
-        Double newFactor = (Double) (easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+        Double newFactor = (easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
         newFactor = Math.max(newFactor, 1.3);
         progress.setEaseFactor(newFactor);
         if (quality >= 3) {
