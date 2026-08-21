@@ -65,7 +65,7 @@ public class AuthenticationService {
 
         try {
             jwtService.verifyAccessToken(token);
-        } catch (AppException e) {
+        } catch (AppException _) {
             isValid = false;
         }
 
