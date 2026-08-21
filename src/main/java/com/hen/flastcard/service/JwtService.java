@@ -108,7 +108,7 @@ public class JwtService {
         return stringJoiner.toString();
     }
 
-    public SignedJWT verifyAccessToken(String token) throws JOSEException, ParseException {
+    public void verifyAccessToken(String token) throws JOSEException, ParseException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
@@ -122,8 +122,6 @@ public class JwtService {
         if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-
-        return signedJWT;
     }
 
     public SignedJWT verifyRefreshToken(String token) throws JOSEException, ParseException {
