@@ -17,7 +17,6 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class LearningProgressService {
-    LearningProgressRepository learningProgressRepository;
 
     public LearningProgress initializeProgress(User user, FlashCard flashCard) {
         LearningProgress progress = LearningProgress.builder()
