@@ -187,6 +187,30 @@ class JwtServiceTest {
     }
 
     @Test
+    void generateAccessToken_roleWithoutPermissions_success() throws Exception {
+        Role roleWithoutPermissions = Role.builder()
+                .name("USER")
+                .permissions(Set.of())
+                .build();
+
+        user.setRoles(Set.of(roleWithoutPermissions));
+
+        var token = jwtService.generateAccessToken(user);
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Assertions.assertThat(
+                signedJWT.getJWTClaimsSet().getClaim("scope")
+        ).isEqualTo("ROLE_USER");
+
+        Assertions.assertThat(
+                signedJWT.verify(
+                        new MACVerifier(signerKey.getBytes())
+                )
+        ).isTrue();
+    }
+
+    @Test
     void verifyAccessToken_valid_success() {
         var token = jwtService.generateAccessToken(user);
 
@@ -245,6 +269,23 @@ class JwtServiceTest {
                 .isEqualTo(ErrorCode.UNAUTHENTICATED);
 
         verifyNoInteractions(invalidatedTokenRepository);
+    }
+
+    @Test
+    void generateAccessToken_invalidSignerKey_fail() {
+        ReflectionTestUtils.setField(
+                jwtService,
+                "SIGNER_KEY",
+                "short-key"
+        );
+
+        var exception = assertThrows(
+                RuntimeException.class,
+                () -> jwtService.generateAccessToken(user)
+        );
+
+        Assertions.assertThat(exception.getCause())
+                .isInstanceOf(JOSEException.class);
     }
 
     @Test
@@ -354,6 +395,32 @@ class JwtServiceTest {
 
         verify(invalidatedTokenRepository)
                 .existsById(jit);
+    }
+
+    @Test
+    void verifyRefreshToken_invalidSignature_fail() throws Exception {
+        String token = createToken(
+                user.getEmail(),
+                "refresh-jit",
+                new Date(System.currentTimeMillis() + 60_000),
+                "refresh"
+        );
+
+        ReflectionTestUtils.setField(
+                jwtService,
+                "SIGNER_KEY",
+                "9999999999999999999999999999999999999999999999999999999999999999"
+        );
+
+        var exception = assertThrows(
+                AppException.class,
+                () -> jwtService.verifyRefreshToken(token)
+        );
+
+        Assertions.assertThat(exception.getErrorCode())
+                .isEqualTo(ErrorCode.UNAUTHENTICATED);
+
+        verifyNoInteractions(invalidatedTokenRepository);
     }
 
     @Test
