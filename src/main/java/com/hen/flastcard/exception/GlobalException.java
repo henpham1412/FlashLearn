@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @ControllerAdvice
 @Slf4j
 public class GlobalException {
-    private final String MIN_ATTRIBUTE = "min";
+    private static final String MIN_ATTRIBUTE = "min";
 
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException ex) {
@@ -51,17 +51,30 @@ public class GlobalException {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         ApiResponse<Object> response = new ApiResponse<>();
-        String enumKey = ex.getBindingResult().getFieldError().getDefaultMessage();
+        var bindingResult = ex.getBindingResult();
+        var fieldError = bindingResult.getFieldError();
+        String enumKey = null;
+        if (fieldError != null) {
+            enumKey = fieldError.getDefaultMessage();
+        }
+
         ErrorCode errorCode = ErrorCode.KEY_INVALID;
         Map<String, Object> attributes = null;
-        ;
-        try {
-            errorCode = ErrorCode.valueOf(enumKey);
-            var constrainViolation =
-                    ex.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
-            attributes = constrainViolation.getConstraintDescriptor().getAttributes();
-        } catch (IllegalArgumentException e) {
+        if (enumKey != null) {
+            try {
+                errorCode = ErrorCode.valueOf(enumKey);
 
+                var constrainViolation =
+                        ex.getBindingResult()
+                                .getAllErrors()
+                                .getFirst()
+                                .unwrap(ConstraintViolation.class);
+
+                attributes = constrainViolation
+                        .getConstraintDescriptor()
+                        .getAttributes();
+            } catch (IllegalArgumentException _) {
+            }
         }
         response.setCode(errorCode.getCode());
         response.setMessage(
