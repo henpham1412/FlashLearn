@@ -57,7 +57,7 @@ public class StudyService {
         List<StudyCardResponse> studyCardResponses = new ArrayList<>();
         List<LearningProgress> progresses = new ArrayList<>();
         User user = currentUserService.getCurrentUser();
-        Deck deck = deckRepository
+        Deck _ = deckRepository
                 .findByIdAndUser_Id(id, user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
         List<FlashCard> flashCards = flashCardRepository.findAllByDeck_Id(id);
@@ -85,7 +85,6 @@ public class StudyService {
         LearningProgress progress = learningProgressRepository
                 .findByUser_IdAndFlashCard_Id(user.getId(), request.getCardId())
                 .orElseThrow(() -> new AppException(ErrorCode.PROGRESS_NOT_EXISTED));
-        ;
         spacedRepetitionStrategy.updateProgress(progress, request.getQuality());
         learningProgressRepository.save(progress);
         return ReviewResponse.builder()
