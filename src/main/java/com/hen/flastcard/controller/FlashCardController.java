@@ -45,7 +45,7 @@ public class FlashCardController {
                 .build();
     }
 
-    @DeleteMapping("cards/{cardId}")
+    @DeleteMapping("/cards/{cardId}")
     public ApiResponse<String> deleteCard(@PathVariable("cardId") Long id) {
         return ApiResponse.<String>builder()
                 .result(flashCardService.deleteFlashCard(id))
