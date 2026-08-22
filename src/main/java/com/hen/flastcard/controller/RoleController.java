@@ -28,14 +28,14 @@ public class RoleController {
     }
 
     @GetMapping
-    public ApiResponse<List<RoleResponse>> create() {
+    public ApiResponse<List<RoleResponse>> getAll() {
         return ApiResponse.<List<RoleResponse>>builder()
                 .result(roleService.getAll())
                 .build();
     }
 
     @DeleteMapping("/{role}")
-    public ApiResponse<Void> create(@PathVariable("role") String role) {
+    public ApiResponse<Void> delete(@PathVariable("role") String role) {
         roleService.delete(role);
         return ApiResponse.<Void>builder().build();
     }
