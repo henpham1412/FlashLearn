@@ -1,15 +1,18 @@
 package com.hen.flastcard.controller;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.hen.flastcard.configuration.CustomJwtDecoder;
-import com.hen.flastcard.dto.request.UserCreationRequest;
-import com.hen.flastcard.dto.request.UserUpdationRequest;
-import com.hen.flastcard.dto.response.UserResponse;
-import com.hen.flastcard.service.UserService;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
@@ -17,22 +20,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.hen.flastcard.configuration.CustomJwtDecoder;
+import com.hen.flastcard.dto.request.UserCreationRequest;
+import com.hen.flastcard.dto.request.UserUpdationRequest;
+import com.hen.flastcard.dto.response.UserResponse;
+import com.hen.flastcard.service.UserService;
+
 import tools.jackson.databind.ObjectMapper;
-
-import java.util.List;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-
 
 @WebMvcTest(UserController.class)
 class UserControllerTest {
@@ -65,9 +59,7 @@ class UserControllerTest {
                 .password("12345678")
                 .build();
 
-        updationRequest = UserUpdationRequest.builder()
-                .username("john")
-                .build();
+        updationRequest = UserUpdationRequest.builder().username("john").build();
 
         userResponse = UserResponse.builder()
                 .id(1L)
@@ -81,20 +73,16 @@ class UserControllerTest {
                         .id(2L)
                         .username("alice")
                         .email("alice@gmail.com")
-                        .build()
-        );
+                        .build());
     }
 
     @Test
     void createUser_validRequest_success() throws Exception {
-        when(userService.createUser(creationRequest))
-                .thenReturn(userResponse);
+        when(userService.createUser(creationRequest)).thenReturn(userResponse);
 
-        mockMvc.perform(
-                        post("/api/users")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(creationRequest))
-                )
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(creationRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1000))
                 .andExpect(jsonPath("$.result.id").value(1))
@@ -106,8 +94,7 @@ class UserControllerTest {
 
     @Test
     void getUserById_validRequest_success() throws Exception {
-        when(userService.getUserById(1L))
-                .thenReturn(userResponse);
+        when(userService.getUserById(1L)).thenReturn(userResponse);
 
         mockMvc.perform(get("/api/users/1"))
                 .andExpect(status().isOk())
@@ -121,8 +108,7 @@ class UserControllerTest {
 
     @Test
     void getAll_success() throws Exception {
-        when(userService.getAll())
-                .thenReturn(userResponses);
+        when(userService.getAll()).thenReturn(userResponses);
 
         mockMvc.perform(get("/api/users"))
                 .andExpect(status().isOk())
@@ -139,14 +125,11 @@ class UserControllerTest {
 
     @Test
     void updateUser_validRequest_success() throws Exception {
-        when(userService.updateUser(1L, updationRequest))
-                .thenReturn(userResponse);
+        when(userService.updateUser(1L, updationRequest)).thenReturn(userResponse);
 
-        mockMvc.perform(
-                        put("/api/users/1")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(updationRequest))
-                )
+        mockMvc.perform(put("/api/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updationRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1000))
                 .andExpect(jsonPath("$.result.id").value(1))
@@ -157,8 +140,7 @@ class UserControllerTest {
 
     @Test
     void deleteUser_validRequest_success() throws Exception {
-        when(userService.deleteUser(1L))
-                .thenReturn("User has been deleted");
+        when(userService.deleteUser(1L)).thenReturn("User has been deleted");
 
         mockMvc.perform(delete("/api/users/1"))
                 .andExpect(status().isOk())
@@ -170,8 +152,7 @@ class UserControllerTest {
 
     @Test
     void getMyInfo_success() throws Exception {
-        when(userService.getMyInfo())
-                .thenReturn(userResponse);
+        when(userService.getMyInfo()).thenReturn(userResponse);
 
         mockMvc.perform(get("/api/users/me"))
                 .andExpect(status().isOk())
@@ -185,14 +166,11 @@ class UserControllerTest {
 
     @Test
     void updateMyInfo_validRequest_success() throws Exception {
-        when(userService.updateUser(updationRequest))
-                .thenReturn(userResponse);
+        when(userService.updateUser(updationRequest)).thenReturn(userResponse);
 
-        mockMvc.perform(
-                        put("/api/users/me")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(updationRequest))
-                )
+        mockMvc.perform(put("/api/users/me")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updationRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1000))
                 .andExpect(jsonPath("$.result.id").value(1))

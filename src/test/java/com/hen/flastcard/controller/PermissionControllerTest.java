@@ -1,12 +1,18 @@
 package com.hen.flastcard.controller;
 
-import com.hen.flastcard.dto.request.PermissionRequest;
-import com.hen.flastcard.dto.response.PermissionResponse;
-import com.hen.flastcard.service.PermissionService;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
@@ -14,20 +20,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.hen.flastcard.dto.request.PermissionRequest;
+import com.hen.flastcard.dto.response.PermissionResponse;
+import com.hen.flastcard.service.PermissionService;
+
 import tools.jackson.databind.ObjectMapper;
-
-import java.util.List;
-
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PermissionController.class)
 class PermissionControllerTest {
@@ -65,20 +62,16 @@ class PermissionControllerTest {
                 PermissionResponse.builder()
                         .name("USER_DELETE")
                         .description("Delete user")
-                        .build()
-        );
+                        .build());
     }
 
     @Test
     void create_validRequest_success() throws Exception {
-        when(permissionService.create(permissionRequest))
-                .thenReturn(permissionResponse);
+        when(permissionService.create(permissionRequest)).thenReturn(permissionResponse);
 
-        mockMvc.perform(
-                        post("/api/permissions")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(permissionRequest))
-                )
+        mockMvc.perform(post("/api/permissions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(permissionRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1000))
                 .andExpect(jsonPath("$.result.name").value("USER_GET_ALL"))
@@ -89,8 +82,7 @@ class PermissionControllerTest {
 
     @Test
     void getAll_success() throws Exception {
-        when(permissionService.getALl())
-                .thenReturn(permissionResponses);
+        when(permissionService.getALl()).thenReturn(permissionResponses);
 
         mockMvc.perform(get("/api/permissions"))
                 .andExpect(status().isOk())

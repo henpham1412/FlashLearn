@@ -185,6 +185,7 @@
                         <exclude>com/hen/flastcard/entity/**</exclude>
                         <exclude>com/hen/flastcard/mapper/**</exclude>
                         <exclude>com/hen/flastcard/configuration/**</exclude>
+                        <exclude>com/hen/flastcard/FlastcardApplication.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>

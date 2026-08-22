@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import com.hen.flastcard.entity.FlashCard;
 import com.hen.flastcard.entity.LearningProgress;
 import com.hen.flastcard.entity.User;
-import com.hen.flastcard.repository.LearningProgressRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

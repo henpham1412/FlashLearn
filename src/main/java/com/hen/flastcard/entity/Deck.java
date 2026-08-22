@@ -6,10 +6,10 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
-import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity

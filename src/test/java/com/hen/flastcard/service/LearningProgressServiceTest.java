@@ -1,7 +1,7 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.entity.FlashCard;
-import com.hen.flastcard.entity.User;
+import java.time.LocalDateTime;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import com.hen.flastcard.entity.FlashCard;
+import com.hen.flastcard.entity.User;
 
 @ExtendWith(MockitoExtension.class)
 class LearningProgressServiceTest {
@@ -22,11 +23,7 @@ class LearningProgressServiceTest {
 
     @BeforeEach
     void initData() {
-        user = User.builder()
-                .id(1L)
-                .username("john")
-                .email("john@gmail.com")
-                .build();
+        user = User.builder().id(1L).username("john").email("john@gmail.com").build();
 
         flashCard = FlashCard.builder()
                 .id(1L)
@@ -45,20 +42,13 @@ class LearningProgressServiceTest {
 
         var after = LocalDateTime.now();
 
-        Assertions.assertThat(progress.getUser())
-                .isEqualTo(user);
-        Assertions.assertThat(progress.getFlashCard())
-                .isEqualTo(flashCard);
-        Assertions.assertThat(progress.getReviewInterval())
-                .isEqualTo(1);
-        Assertions.assertThat(progress.getRepetition())
-                .isZero();
-        Assertions.assertThat(progress.getEaseFactor())
-                .isEqualTo(2.5);
-        Assertions.assertThat(progress.getLastReviewDate())
-                .isNull();
+        Assertions.assertThat(progress.getUser()).isEqualTo(user);
+        Assertions.assertThat(progress.getFlashCard()).isEqualTo(flashCard);
+        Assertions.assertThat(progress.getReviewInterval()).isEqualTo(1);
+        Assertions.assertThat(progress.getRepetition()).isZero();
+        Assertions.assertThat(progress.getEaseFactor()).isEqualTo(2.5);
+        Assertions.assertThat(progress.getLastReviewDate()).isNull();
 
-        Assertions.assertThat(progress.getNextReviewDate())
-                .isBetween(before, after);
+        Assertions.assertThat(progress.getNextReviewDate()).isBetween(before, after);
     }
 }

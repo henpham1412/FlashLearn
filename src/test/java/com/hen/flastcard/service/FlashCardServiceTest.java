@@ -1,5 +1,19 @@
 package com.hen.flastcard.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.hen.flastcard.dto.request.FlashCardRequest;
 import com.hen.flastcard.dto.response.FlashCardResponse;
 import com.hen.flastcard.entity.Deck;
@@ -10,19 +24,6 @@ import com.hen.flastcard.exception.ErrorCode;
 import com.hen.flastcard.mapper.FlashCardMapper;
 import com.hen.flastcard.repository.DeckRepository;
 import com.hen.flastcard.repository.FlashCardRepository;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FlashCardServiceTest {
@@ -52,11 +53,7 @@ class FlashCardServiceTest {
 
     @BeforeEach
     void initData() {
-        user = User.builder()
-                .id(1L)
-                .username("john")
-                .email("john@gmail.com")
-                .build();
+        user = User.builder().id(1L).username("john").email("john@gmail.com").build();
 
         deck = Deck.builder()
                 .id(1L)
@@ -111,24 +108,19 @@ class FlashCardServiceTest {
     void createFlashCard_valid_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
         when(flashCardMapper.toFlashCard(request)).thenReturn(flashCard);
-        when(deckRepository.findByIdAndUser_Id(1L, user.getId()))
-                .thenReturn(Optional.of(deck));
+        when(deckRepository.findByIdAndUser_Id(1L, user.getId())).thenReturn(Optional.of(deck));
         when(flashCardRepository.save(flashCard)).thenReturn(flashCard);
-        when(flashCardMapper.toFlashCardResponse(flashCard))
-                .thenReturn(flashCardResponse);
+        when(flashCardMapper.toFlashCardResponse(flashCard)).thenReturn(flashCardResponse);
 
         var response = flashCardService.createFlashCard(1L, request);
 
-        Assertions.assertThat(response)
-                .isEqualTo(flashCardResponse);
+        Assertions.assertThat(response).isEqualTo(flashCardResponse);
 
-        Assertions.assertThat(flashCard.getDeck())
-                .isEqualTo(deck);
+        Assertions.assertThat(flashCard.getDeck()).isEqualTo(deck);
 
         verify(currentUserService).getCurrentUser();
         verify(flashCardMapper).toFlashCard(request);
-        verify(deckRepository)
-                .findByIdAndUser_Id(1L, user.getId());
+        verify(deckRepository).findByIdAndUser_Id(1L, user.getId());
         verify(flashCardRepository).save(flashCard);
         verify(flashCardMapper).toFlashCardResponse(flashCard);
     }
@@ -137,21 +129,15 @@ class FlashCardServiceTest {
     void createFlashCard_deckNotFound_fail() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
         when(flashCardMapper.toFlashCard(request)).thenReturn(flashCard);
-        when(deckRepository.findByIdAndUser_Id(1L, user.getId()))
-                .thenReturn(Optional.empty());
+        when(deckRepository.findByIdAndUser_Id(1L, user.getId())).thenReturn(Optional.empty());
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> flashCardService.createFlashCard(1L, request)
-        );
+        var exception = assertThrows(AppException.class, () -> flashCardService.createFlashCard(1L, request));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.DECK_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DECK_NOT_EXISTED);
 
         verify(currentUserService).getCurrentUser();
         verify(flashCardMapper).toFlashCard(request);
-        verify(deckRepository)
-                .findByIdAndUser_Id(1L, user.getId());
+        verify(deckRepository).findByIdAndUser_Id(1L, user.getId());
         verify(flashCardRepository, never()).save(any());
         verify(flashCardMapper, never()).toFlashCardResponse(any());
     }
@@ -159,47 +145,32 @@ class FlashCardServiceTest {
     @Test
     void updateFlashCard_valid_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
-        when(flashCardRepository
-                .findByIdAndDeck_User_Id(1L, user.getId()))
-                .thenReturn(Optional.of(flashCard));
-        when(flashCardMapper.toFlashCardResponse(flashCard))
-                .thenReturn(flashCardResponse);
+        when(flashCardRepository.findByIdAndDeck_User_Id(1L, user.getId())).thenReturn(Optional.of(flashCard));
+        when(flashCardMapper.toFlashCardResponse(flashCard)).thenReturn(flashCardResponse);
 
         var response = flashCardService.updateFlashCard(1L, request);
 
-        Assertions.assertThat(response)
-                .isEqualTo(flashCardResponse);
+        Assertions.assertThat(response).isEqualTo(flashCardResponse);
 
         verify(currentUserService).getCurrentUser();
-        verify(flashCardRepository)
-                .findByIdAndDeck_User_Id(1L, user.getId());
-        verify(flashCardMapper)
-                .updateFlashCard(flashCard, request);
+        verify(flashCardRepository).findByIdAndDeck_User_Id(1L, user.getId());
+        verify(flashCardMapper).updateFlashCard(flashCard, request);
         verify(flashCardRepository).save(flashCard);
-        verify(flashCardMapper)
-                .toFlashCardResponse(flashCard);
+        verify(flashCardMapper).toFlashCardResponse(flashCard);
     }
 
     @Test
     void updateFlashCard_notFound_fail() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
-        when(flashCardRepository
-                .findByIdAndDeck_User_Id(1L, user.getId()))
-                .thenReturn(Optional.empty());
+        when(flashCardRepository.findByIdAndDeck_User_Id(1L, user.getId())).thenReturn(Optional.empty());
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> flashCardService.updateFlashCard(1L, request)
-        );
+        var exception = assertThrows(AppException.class, () -> flashCardService.updateFlashCard(1L, request));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.FLASHCARD_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.FLASHCARD_NOT_EXISTED);
 
         verify(currentUserService).getCurrentUser();
-        verify(flashCardRepository)
-                .findByIdAndDeck_User_Id(1L, user.getId());
-        verify(flashCardMapper, never())
-                .updateFlashCard(any(), any());
+        verify(flashCardRepository).findByIdAndDeck_User_Id(1L, user.getId());
+        verify(flashCardMapper, never()).updateFlashCard(any(), any());
         verify(flashCardRepository, never()).save(any());
         verify(flashCardMapper, never()).toFlashCardResponse(any());
     }
@@ -207,84 +178,62 @@ class FlashCardServiceTest {
     @Test
     void deleteFlashCard_valid_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
-        when(flashCardRepository
-                .findByIdAndDeck_User_Id(1L, user.getId()))
-                .thenReturn(Optional.of(flashCard));
+        when(flashCardRepository.findByIdAndDeck_User_Id(1L, user.getId())).thenReturn(Optional.of(flashCard));
 
         var response = flashCardService.deleteFlashCard(1L);
 
-        Assertions.assertThat(response)
-                .isEqualTo("FlashCard has been deleted");
+        Assertions.assertThat(response).isEqualTo("FlashCard has been deleted");
 
         verify(currentUserService).getCurrentUser();
-        verify(flashCardRepository)
-                .findByIdAndDeck_User_Id(1L, user.getId());
+        verify(flashCardRepository).findByIdAndDeck_User_Id(1L, user.getId());
         verify(flashCardRepository).delete(flashCard);
     }
 
     @Test
     void deleteFlashCard_notFound_fail() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
-        when(flashCardRepository
-                .findByIdAndDeck_User_Id(1L, user.getId()))
-                .thenReturn(Optional.empty());
+        when(flashCardRepository.findByIdAndDeck_User_Id(1L, user.getId())).thenReturn(Optional.empty());
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> flashCardService.deleteFlashCard(1L)
-        );
+        var exception = assertThrows(AppException.class, () -> flashCardService.deleteFlashCard(1L));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.FLASHCARD_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.FLASHCARD_NOT_EXISTED);
 
         verify(currentUserService).getCurrentUser();
-        verify(flashCardRepository)
-                .findByIdAndDeck_User_Id(1L, user.getId());
+        verify(flashCardRepository).findByIdAndDeck_User_Id(1L, user.getId());
         verify(flashCardRepository, never()).delete(any());
     }
 
     @Test
     void getAll_valid_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
-        when(flashCardRepository
-                .findAllByDeck_IdAndDeck_User_Id(1L, user.getId()))
+        when(flashCardRepository.findAllByDeck_IdAndDeck_User_Id(1L, user.getId()))
                 .thenReturn(List.of(flashCard, flashCard2));
 
-        when(flashCardMapper.toFlashCardResponse(flashCard))
-                .thenReturn(flashCardResponse);
-        when(flashCardMapper.toFlashCardResponse(flashCard2))
-                .thenReturn(flashCardResponse2);
+        when(flashCardMapper.toFlashCardResponse(flashCard)).thenReturn(flashCardResponse);
+        when(flashCardMapper.toFlashCardResponse(flashCard2)).thenReturn(flashCardResponse2);
 
         var response = flashCardService.getAll(1L);
 
-        Assertions.assertThat(response)
-                .containsExactly(flashCardResponse, flashCardResponse2);
+        Assertions.assertThat(response).containsExactly(flashCardResponse, flashCardResponse2);
 
         verify(currentUserService).getCurrentUser();
-        verify(flashCardRepository)
-                .findAllByDeck_IdAndDeck_User_Id(1L, user.getId());
-        verify(flashCardMapper)
-                .toFlashCardResponse(flashCard);
-        verify(flashCardMapper)
-                .toFlashCardResponse(flashCard2);
+        verify(flashCardRepository).findAllByDeck_IdAndDeck_User_Id(1L, user.getId());
+        verify(flashCardMapper).toFlashCardResponse(flashCard);
+        verify(flashCardMapper).toFlashCardResponse(flashCard2);
     }
 
     @Test
     void getAll_empty_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
-        when(flashCardRepository
-                .findAllByDeck_IdAndDeck_User_Id(1L, user.getId()))
+        when(flashCardRepository.findAllByDeck_IdAndDeck_User_Id(1L, user.getId()))
                 .thenReturn(List.of());
 
         var response = flashCardService.getAll(1L);
 
-        Assertions.assertThat(response)
-                .isEmpty();
+        Assertions.assertThat(response).isEmpty();
 
         verify(currentUserService).getCurrentUser();
-        verify(flashCardRepository)
-                .findAllByDeck_IdAndDeck_User_Id(1L, user.getId());
-        verify(flashCardMapper, never())
-                .toFlashCardResponse(any());
+        verify(flashCardRepository).findAllByDeck_IdAndDeck_User_Id(1L, user.getId());
+        verify(flashCardMapper, never()).toFlashCardResponse(any());
     }
 }

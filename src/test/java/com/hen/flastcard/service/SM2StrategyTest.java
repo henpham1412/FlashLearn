@@ -1,7 +1,9 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.entity.LearningProgress;
-import com.hen.flastcard.service.implementation.SM2Strategy;
+import static org.assertj.core.api.AssertionsForClassTypes.within;
+
+import java.time.LocalDateTime;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,9 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-
-import static org.assertj.core.api.AssertionsForClassTypes.within;
+import com.hen.flastcard.entity.LearningProgress;
+import com.hen.flastcard.service.implementation.SM2Strategy;
 
 @ExtendWith(MockitoExtension.class)
 class SM2StrategyTest {
@@ -38,23 +39,15 @@ class SM2StrategyTest {
 
         var after = LocalDateTime.now();
 
-        Assertions.assertThat(progress.getEaseFactor())
-                .isEqualTo(2.5);
+        Assertions.assertThat(progress.getEaseFactor()).isEqualTo(2.5);
 
-        Assertions.assertThat(progress.getReviewInterval())
-                .isEqualTo(1);
+        Assertions.assertThat(progress.getReviewInterval()).isEqualTo(1);
 
-        Assertions.assertThat(progress.getRepetition())
-                .isEqualTo(1);
+        Assertions.assertThat(progress.getRepetition()).isEqualTo(1);
 
-        Assertions.assertThat(progress.getLastReviewDate())
-                .isBetween(before, after);
+        Assertions.assertThat(progress.getLastReviewDate()).isBetween(before, after);
 
-        Assertions.assertThat(progress.getNextReviewDate())
-                .isBetween(
-                        before.plusDays(1),
-                        after.plusDays(1)
-                );
+        Assertions.assertThat(progress.getNextReviewDate()).isBetween(before.plusDays(1), after.plusDays(1));
     }
 
     @Test
@@ -69,23 +62,15 @@ class SM2StrategyTest {
 
         var after = LocalDateTime.now();
 
-        Assertions.assertThat(progress.getEaseFactor())
-                .isEqualTo(2.5);
+        Assertions.assertThat(progress.getEaseFactor()).isEqualTo(2.5);
 
-        Assertions.assertThat(progress.getReviewInterval())
-                .isEqualTo(6);
+        Assertions.assertThat(progress.getReviewInterval()).isEqualTo(6);
 
-        Assertions.assertThat(progress.getRepetition())
-                .isEqualTo(2);
+        Assertions.assertThat(progress.getRepetition()).isEqualTo(2);
 
-        Assertions.assertThat(progress.getLastReviewDate())
-                .isBetween(before, after);
+        Assertions.assertThat(progress.getLastReviewDate()).isBetween(before, after);
 
-        Assertions.assertThat(progress.getNextReviewDate())
-                .isBetween(
-                        before.plusDays(6),
-                        after.plusDays(6)
-                );
+        Assertions.assertThat(progress.getNextReviewDate()).isBetween(before.plusDays(6), after.plusDays(6));
     }
 
     @Test
@@ -100,23 +85,15 @@ class SM2StrategyTest {
 
         var after = LocalDateTime.now();
 
-        Assertions.assertThat(progress.getEaseFactor())
-                .isEqualTo(2.5);
+        Assertions.assertThat(progress.getEaseFactor()).isEqualTo(2.5);
 
-        Assertions.assertThat(progress.getReviewInterval())
-                .isEqualTo(15);
+        Assertions.assertThat(progress.getReviewInterval()).isEqualTo(15);
 
-        Assertions.assertThat(progress.getRepetition())
-                .isEqualTo(3);
+        Assertions.assertThat(progress.getRepetition()).isEqualTo(3);
 
-        Assertions.assertThat(progress.getLastReviewDate())
-                .isBetween(before, after);
+        Assertions.assertThat(progress.getLastReviewDate()).isBetween(before, after);
 
-        Assertions.assertThat(progress.getNextReviewDate())
-                .isBetween(
-                        before.plusDays(15),
-                        after.plusDays(15)
-                );
+        Assertions.assertThat(progress.getNextReviewDate()).isBetween(before.plusDays(15), after.plusDays(15));
     }
 
     @Test
@@ -131,23 +108,15 @@ class SM2StrategyTest {
 
         var after = LocalDateTime.now();
 
-        Assertions.assertThat(progress.getRepetition())
-                .isZero();
+        Assertions.assertThat(progress.getRepetition()).isZero();
 
-        Assertions.assertThat(progress.getReviewInterval())
-                .isEqualTo(1);
+        Assertions.assertThat(progress.getReviewInterval()).isEqualTo(1);
 
-        Assertions.assertThat(progress.getEaseFactor())
-                .isCloseTo(2.18, within(0.000001));
+        Assertions.assertThat(progress.getEaseFactor()).isCloseTo(2.18, within(0.000001));
 
-        Assertions.assertThat(progress.getLastReviewDate())
-                .isBetween(before, after);
+        Assertions.assertThat(progress.getLastReviewDate()).isBetween(before, after);
 
-        Assertions.assertThat(progress.getNextReviewDate())
-                .isBetween(
-                        before.plusDays(1),
-                        after.plusDays(1)
-                );
+        Assertions.assertThat(progress.getNextReviewDate()).isBetween(before.plusDays(1), after.plusDays(1));
     }
 
     @Test
@@ -158,13 +127,10 @@ class SM2StrategyTest {
 
         sm2Strategy.updateProgress(progress, 0);
 
-        Assertions.assertThat(progress.getEaseFactor())
-                .isEqualTo(1.3);
+        Assertions.assertThat(progress.getEaseFactor()).isEqualTo(1.3);
 
-        Assertions.assertThat(progress.getRepetition())
-                .isZero();
+        Assertions.assertThat(progress.getRepetition()).isZero();
 
-        Assertions.assertThat(progress.getReviewInterval())
-                .isEqualTo(1);
+        Assertions.assertThat(progress.getReviewInterval()).isEqualTo(1);
     }
 }

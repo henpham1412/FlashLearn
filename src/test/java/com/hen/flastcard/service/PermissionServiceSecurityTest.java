@@ -1,6 +1,7 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.dto.request.PermissionRequest;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -8,7 +9,7 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.hen.flastcard.dto.request.PermissionRequest;
 
 @SpringBootTest
 @TestPropertySource("/test.properties")
@@ -25,27 +26,18 @@ class PermissionServiceSecurityTest {
                 .description("Create role")
                 .build();
 
-        assertThrows(
-                AuthorizationDeniedException.class,
-                () -> permissionService.create(request)
-        );
+        assertThrows(AuthorizationDeniedException.class, () -> permissionService.create(request));
     }
 
     @Test
     @WithMockUser(authorities = "PERMISSION_CREATE")
     void getAll_withoutRequiredAuthority_fail() {
-        assertThrows(
-                AuthorizationDeniedException.class,
-                () -> permissionService.getALl()
-        );
+        assertThrows(AuthorizationDeniedException.class, () -> permissionService.getALl());
     }
 
     @Test
     @WithMockUser(authorities = "PERMISSION_CREATE")
     void delete_withoutRequiredAuthority_fail() {
-        assertThrows(
-                AuthorizationDeniedException.class,
-                () -> permissionService.delete("ROLE_CREATE")
-        );
+        assertThrows(AuthorizationDeniedException.class, () -> permissionService.delete("ROLE_CREATE"));
     }
 }

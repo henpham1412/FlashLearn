@@ -1,10 +1,9 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.dto.request.PermissionRequest;
-import com.hen.flastcard.dto.response.PermissionResponse;
-import com.hen.flastcard.entity.Permission;
-import com.hen.flastcard.mapper.PermissionMapper;
-import com.hen.flastcard.repository.PermissionRepository;
+import static org.mockito.Mockito.*;
+
+import java.util.List;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,9 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static org.mockito.Mockito.*;
+import com.hen.flastcard.dto.request.PermissionRequest;
+import com.hen.flastcard.dto.response.PermissionResponse;
+import com.hen.flastcard.entity.Permission;
+import com.hen.flastcard.mapper.PermissionMapper;
+import com.hen.flastcard.repository.PermissionRepository;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionServiceTest {
@@ -65,78 +66,59 @@ class PermissionServiceTest {
 
     @Test
     void create_valid_success() {
-        when(permissionMapper.toPermission(request))
-                .thenReturn(permission);
+        when(permissionMapper.toPermission(request)).thenReturn(permission);
 
-        when(permissionRepository.save(permission))
-                .thenReturn(permission);
+        when(permissionRepository.save(permission)).thenReturn(permission);
 
-        when(permissionMapper.toPermissionResponse(permission))
-                .thenReturn(permissionResponse);
+        when(permissionMapper.toPermissionResponse(permission)).thenReturn(permissionResponse);
 
         var response = permissionService.create(request);
 
-        Assertions.assertThat(response)
-                .isEqualTo(permissionResponse);
+        Assertions.assertThat(response).isEqualTo(permissionResponse);
 
-        verify(permissionMapper)
-                .toPermission(request);
+        verify(permissionMapper).toPermission(request);
 
-        verify(permissionRepository)
-                .save(permission);
+        verify(permissionRepository).save(permission);
 
-        verify(permissionMapper)
-                .toPermissionResponse(permission);
+        verify(permissionMapper).toPermissionResponse(permission);
     }
 
     @Test
     void getAll_valid_success() {
-        when(permissionRepository.findAll())
-                .thenReturn(List.of(permission, permission2));
+        when(permissionRepository.findAll()).thenReturn(List.of(permission, permission2));
 
-        when(permissionMapper.toPermissionResponse(permission))
-                .thenReturn(permissionResponse);
+        when(permissionMapper.toPermissionResponse(permission)).thenReturn(permissionResponse);
 
-        when(permissionMapper.toPermissionResponse(permission2))
-                .thenReturn(permissionResponse2);
+        when(permissionMapper.toPermissionResponse(permission2)).thenReturn(permissionResponse2);
 
         var response = permissionService.getALl();
 
-        Assertions.assertThat(response)
-                .containsExactly(permissionResponse, permissionResponse2);
+        Assertions.assertThat(response).containsExactly(permissionResponse, permissionResponse2);
 
-        verify(permissionRepository)
-                .findAll();
+        verify(permissionRepository).findAll();
 
-        verify(permissionMapper)
-                .toPermissionResponse(permission);
+        verify(permissionMapper).toPermissionResponse(permission);
 
-        verify(permissionMapper)
-                .toPermissionResponse(permission2);
+        verify(permissionMapper).toPermissionResponse(permission2);
     }
 
     @Test
     void getAll_empty_success() {
-        when(permissionRepository.findAll())
-                .thenReturn(List.of());
+        when(permissionRepository.findAll()).thenReturn(List.of());
 
         var response = permissionService.getALl();
 
-        Assertions.assertThat(response)
-                .isEmpty();
+        Assertions.assertThat(response).isEmpty();
 
-        verify(permissionRepository)
-                .findAll();
+        verify(permissionRepository).findAll();
 
-        verify(permissionMapper, never())
-                .toPermissionResponse(any());
+        verify(permissionMapper, never()).toPermissionResponse(any());
     }
 
     @Test
     void delete_valid_success() {
         permissionService.delete("ROLE_CREATE");
 
-        verify(permissionRepository)
-                .deleteById("ROLE_CREATE");
+        verify(permissionRepository).deleteById("ROLE_CREATE");
     }
 }

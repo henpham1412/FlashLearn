@@ -1,5 +1,20 @@
 package com.hen.flastcard.service;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.hen.flastcard.dto.request.ReviewRequest;
 import com.hen.flastcard.dto.response.StudyCardResponse;
 import com.hen.flastcard.entity.Deck;
@@ -12,20 +27,6 @@ import com.hen.flastcard.mapper.StudyMapper;
 import com.hen.flastcard.repository.DeckRepository;
 import com.hen.flastcard.repository.FlashCardRepository;
 import com.hen.flastcard.repository.LearningProgressRepository;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StudyServiceTest {
@@ -68,11 +69,7 @@ class StudyServiceTest {
 
     @BeforeEach
     void initData() {
-        user = User.builder()
-                .id(1L)
-                .username("john")
-                .email("john@gmail.com")
-                .build();
+        user = User.builder().id(1L).username("john").email("john@gmail.com").build();
 
         deck = Deck.builder()
                 .id(1L)
@@ -140,203 +137,147 @@ class StudyServiceTest {
                 .example("私はりんごを食べる。")
                 .build();
 
-        reviewRequest = ReviewRequest.builder()
-                .cardId(1L)
-                .quality(4)
-                .build();
+        reviewRequest = ReviewRequest.builder().cardId(1L).quality(4).build();
     }
 
     @Test
     void loadStudyCards_deckNotFound_fail() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
-        when(deckRepository.findByIdAndUser_Id(1L, user.getId()))
-                .thenReturn(Optional.empty());
+        when(deckRepository.findByIdAndUser_Id(1L, user.getId())).thenReturn(Optional.empty());
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> studyService.loadStudyCards(1L)
-        );
+        var exception = assertThrows(AppException.class, () -> studyService.loadStudyCards(1L));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.DECK_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.DECK_NOT_EXISTED);
 
         verify(currentUserService).getCurrentUser();
-        verify(deckRepository)
-                .findByIdAndUser_Id(1L, user.getId());
+        verify(deckRepository).findByIdAndUser_Id(1L, user.getId());
 
-        verifyNoInteractions(
-                flashCardRepository,
-                learningProgressRepository,
-                learningProgressService,
-                studyMapper
-        );
+        verifyNoInteractions(flashCardRepository, learningProgressRepository, learningProgressService, studyMapper);
     }
 
     @Test
     void loadStudyCards_newCard_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
 
-        when(deckRepository.findByIdAndUser_Id(1L, user.getId()))
-                .thenReturn(Optional.of(deck));
+        when(deckRepository.findByIdAndUser_Id(1L, user.getId())).thenReturn(Optional.of(deck));
 
-        when(flashCardRepository.findAllByDeck_Id(1L))
-                .thenReturn(List.of(flashCard));
+        when(flashCardRepository.findAllByDeck_Id(1L)).thenReturn(List.of(flashCard));
 
-        when(learningProgressRepository
-                .findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L))
+        when(learningProgressRepository.findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L))
                 .thenReturn(List.of());
 
-        when(learningProgressService.initializeProgress(user, flashCard))
-                .thenReturn(progress);
+        when(learningProgressService.initializeProgress(user, flashCard)).thenReturn(progress);
 
-        when(studyMapper.toStudyCardResponse(flashCard))
-                .thenReturn(studyCardResponse);
+        when(studyMapper.toStudyCardResponse(flashCard)).thenReturn(studyCardResponse);
 
         var response = studyService.loadStudyCards(1L);
 
-        Assertions.assertThat(response)
-                .containsExactly(studyCardResponse);
+        Assertions.assertThat(response).containsExactly(studyCardResponse);
 
         verify(currentUserService).getCurrentUser();
 
-        verify(deckRepository)
-                .findByIdAndUser_Id(1L, user.getId());
+        verify(deckRepository).findByIdAndUser_Id(1L, user.getId());
 
-        verify(flashCardRepository)
-                .findAllByDeck_Id(1L);
+        verify(flashCardRepository).findAllByDeck_Id(1L);
 
-        verify(learningProgressRepository)
-                .findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L);
+        verify(learningProgressRepository).findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L);
 
-        verify(learningProgressService)
-                .initializeProgress(user, flashCard);
+        verify(learningProgressService).initializeProgress(user, flashCard);
 
-        verify(studyMapper)
-                .toStudyCardResponse(flashCard);
+        verify(studyMapper).toStudyCardResponse(flashCard);
 
-        verify(learningProgressRepository)
-                .saveAll(List.of(progress));
+        verify(learningProgressRepository).saveAll(List.of(progress));
     }
 
     @Test
     void loadStudyCards_dueCard_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
 
-        when(deckRepository.findByIdAndUser_Id(1L, user.getId()))
-                .thenReturn(Optional.of(deck));
+        when(deckRepository.findByIdAndUser_Id(1L, user.getId())).thenReturn(Optional.of(deck));
 
-        when(flashCardRepository.findAllByDeck_Id(1L))
-                .thenReturn(List.of(flashCard));
+        when(flashCardRepository.findAllByDeck_Id(1L)).thenReturn(List.of(flashCard));
 
-        when(learningProgressRepository
-                .findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L))
+        when(learningProgressRepository.findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L))
                 .thenReturn(List.of(dueProgress));
 
-        when(studyMapper.toStudyCardResponse(flashCard))
-                .thenReturn(studyCardResponse);
+        when(studyMapper.toStudyCardResponse(flashCard)).thenReturn(studyCardResponse);
 
         var response = studyService.loadStudyCards(1L);
 
-        Assertions.assertThat(response)
-                .containsExactly(studyCardResponse);
+        Assertions.assertThat(response).containsExactly(studyCardResponse);
 
-        verify(studyMapper)
-                .toStudyCardResponse(flashCard);
+        verify(studyMapper).toStudyCardResponse(flashCard);
 
-        verify(learningProgressService, never())
-                .initializeProgress(any(), any());
+        verify(learningProgressService, never()).initializeProgress(any(), any());
 
-        verify(learningProgressRepository)
-                .saveAll(List.of());
+        verify(learningProgressRepository).saveAll(List.of());
     }
 
     @Test
     void loadStudyCards_notDueCard_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
 
-        when(deckRepository.findByIdAndUser_Id(1L, user.getId()))
-                .thenReturn(Optional.of(deck));
+        when(deckRepository.findByIdAndUser_Id(1L, user.getId())).thenReturn(Optional.of(deck));
 
-        when(flashCardRepository.findAllByDeck_Id(1L))
-                .thenReturn(List.of(flashCard2));
+        when(flashCardRepository.findAllByDeck_Id(1L)).thenReturn(List.of(flashCard2));
 
-        when(learningProgressRepository
-                .findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L))
+        when(learningProgressRepository.findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), 1L))
                 .thenReturn(List.of(notDueProgress));
 
         var response = studyService.loadStudyCards(1L);
 
-        Assertions.assertThat(response)
-                .isEmpty();
+        Assertions.assertThat(response).isEmpty();
 
-        verify(studyMapper, never())
-                .toStudyCardResponse(any());
+        verify(studyMapper, never()).toStudyCardResponse(any());
 
-        verify(learningProgressService, never())
-                .initializeProgress(any(), any());
+        verify(learningProgressService, never()).initializeProgress(any(), any());
 
-        verify(learningProgressRepository)
-                .saveAll(List.of());
+        verify(learningProgressRepository).saveAll(List.of());
     }
 
     @Test
     void reviewCard_valid_success() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
 
-        when(learningProgressRepository
-                .findByUser_IdAndFlashCard_Id(user.getId(), 1L))
+        when(learningProgressRepository.findByUser_IdAndFlashCard_Id(user.getId(), 1L))
                 .thenReturn(Optional.of(progress));
 
-        LocalDateTime nextReviewDate =
-                LocalDateTime.now().plusDays(3);
+        LocalDateTime nextReviewDate = LocalDateTime.now().plusDays(3);
 
         progress.setNextReviewDate(nextReviewDate);
 
         var response = studyService.reviewCard(reviewRequest);
 
-        Assertions.assertThat(response.isSuccess())
-                .isTrue();
+        Assertions.assertThat(response.isSuccess()).isTrue();
 
-        Assertions.assertThat(response.getNextReviewDate())
-                .isEqualTo(nextReviewDate);
+        Assertions.assertThat(response.getNextReviewDate()).isEqualTo(nextReviewDate);
 
         verify(currentUserService).getCurrentUser();
 
-        verify(learningProgressRepository)
-                .findByUser_IdAndFlashCard_Id(user.getId(), 1L);
+        verify(learningProgressRepository).findByUser_IdAndFlashCard_Id(user.getId(), 1L);
 
-        verify(spacedRepetitionStrategy)
-                .updateProgress(progress, 4);
+        verify(spacedRepetitionStrategy).updateProgress(progress, 4);
 
-        verify(learningProgressRepository)
-                .save(progress);
+        verify(learningProgressRepository).save(progress);
     }
 
     @Test
     void reviewCard_progressNotFound_fail() {
         when(currentUserService.getCurrentUser()).thenReturn(user);
 
-        when(learningProgressRepository
-                .findByUser_IdAndFlashCard_Id(user.getId(), 1L))
+        when(learningProgressRepository.findByUser_IdAndFlashCard_Id(user.getId(), 1L))
                 .thenReturn(Optional.empty());
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> studyService.reviewCard(reviewRequest)
-        );
+        var exception = assertThrows(AppException.class, () -> studyService.reviewCard(reviewRequest));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.PROGRESS_NOT_EXISTED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.PROGRESS_NOT_EXISTED);
 
         verify(currentUserService).getCurrentUser();
 
-        verify(learningProgressRepository)
-                .findByUser_IdAndFlashCard_Id(user.getId(), 1L);
+        verify(learningProgressRepository).findByUser_IdAndFlashCard_Id(user.getId(), 1L);
 
-        verify(spacedRepetitionStrategy, never())
-                .updateProgress(any(), anyInt());
+        verify(spacedRepetitionStrategy, never()).updateProgress(any(), anyInt());
 
-        verify(learningProgressRepository, never())
-                .save(any());
+        verify(learningProgressRepository, never()).save(any());
     }
 }
