@@ -6,17 +6,18 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @EntityListeners(AuditingEntityListener.class)
 public class Deck {
