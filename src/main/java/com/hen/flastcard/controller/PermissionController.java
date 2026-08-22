@@ -28,14 +28,14 @@ public class PermissionController {
     }
 
     @GetMapping
-    public ApiResponse<List<PermissionResponse>> create() {
+    public ApiResponse<List<PermissionResponse>> getAll() {
         return ApiResponse.<List<PermissionResponse>>builder()
                 .result(permissionService.getALl())
                 .build();
     }
 
     @DeleteMapping("/{permission}")
-    public ApiResponse<Void> create(@PathVariable("permission") String permission) {
+    public ApiResponse<Void> delete(@PathVariable("permission") String permission) {
         permissionService.delete(permission);
         return ApiResponse.<Void>builder().build();
     }
