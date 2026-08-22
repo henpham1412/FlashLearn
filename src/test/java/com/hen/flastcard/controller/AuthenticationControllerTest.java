@@ -1,4 +1,159 @@
 package com.hen.flastcard.controller;
 
-public class AuthenticationControllerTest {
+import com.hen.flastcard.dto.request.AuthenticationRequest;
+import com.hen.flastcard.dto.response.AuthenticationResponse;
+import com.hen.flastcard.dto.response.RefreshResponse;
+import com.hen.flastcard.service.AuthenticationService;
+import com.hen.flastcard.service.JwtService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import tools.jackson.databind.ObjectMapper;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.hamcrest.Matchers;
+
+@WebMvcTest(AuthenticationController.class)
+class AuthenticationControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private AuthenticationService authenticationService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private JpaMetamodelMappingContext jpaMappingContext;
+
+    private AuthenticationRequest authenticationRequest;
+    private AuthenticationResponse authenticationResponse;
+    private RefreshResponse refreshResponse;
+
+    @BeforeEach
+    void initData() {
+        authenticationRequest = AuthenticationRequest.builder()
+                .email("john@gmail.com")
+                .password("12345678")
+                .build();
+
+        authenticationResponse = AuthenticationResponse.builder()
+                .accessToken("access-token")
+                .refreshToken("refresh-token")
+                .authenticated(true)
+                .build();
+
+        refreshResponse = RefreshResponse.builder()
+                .accessToken("new-access-token")
+                .refreshToken("new-refresh-token")
+                .build();
+    }
+
+    @Test
+    void login_validRequest_success() throws Exception {
+        when(authenticationService.authenticate(authenticationRequest))
+                .thenReturn(authenticationResponse);
+
+        mockMvc.perform(
+                        post("/api/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(authenticationRequest))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1000))
+                .andExpect(jsonPath("$.result.accessToken")
+                        .value("access-token"))
+                .andExpect(jsonPath("$.result.authenticated")
+                        .value(true))
+                .andExpect(header().string(
+                        HttpHeaders.SET_COOKIE,
+                        Matchers.containsString("refresh_token=refresh-token")
+                ));
+
+        verify(authenticationService)
+                .authenticate(authenticationRequest);
+    }
+
+    @Test
+    void logout_validRequest_success() throws Exception {
+        when(jwtService.getRefreshToken(any(HttpServletRequest.class)))
+                .thenReturn("refresh-token");
+
+        doNothing().when(authenticationService)
+                .logout("refresh-token");
+
+        mockMvc.perform(
+                        post("/api/auth/logout")
+                                .cookie(new Cookie("refresh_token", "refresh-token"))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1000))
+                .andExpect(header().string(
+                        HttpHeaders.SET_COOKIE,
+                        Matchers.containsString("refresh_token=")
+                ));
+
+        verify(jwtService)
+                .getRefreshToken(any(HttpServletRequest.class));
+
+        verify(authenticationService)
+                .logout("refresh-token");
+    }
+
+    @Test
+    void refresh_validRequest_success() throws Exception {
+        when(jwtService.getRefreshToken(any(HttpServletRequest.class)))
+                .thenReturn("old-refresh-token");
+
+        when(authenticationService.refresh("old-refresh-token"))
+                .thenReturn(refreshResponse);
+
+        mockMvc.perform(
+                        post("/api/auth/refresh")
+                                .cookie(new Cookie(
+                                        "refresh_token",
+                                        "old-refresh-token"
+                                ))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(1000))
+                .andExpect(jsonPath("$.result.accessToken")
+                        .value("new-access-token"))
+                .andExpect(header().string(
+                        HttpHeaders.SET_COOKIE,
+                        Matchers.containsString("refresh_token=new-refresh-token")
+                ));
+
+        verify(jwtService)
+                .getRefreshToken(any(HttpServletRequest.class));
+
+        verify(authenticationService)
+                .refresh("old-refresh-token");
+    }
 }
