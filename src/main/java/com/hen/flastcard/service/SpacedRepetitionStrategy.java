@@ -1,7 +1,8 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.entity.LearningProgress;
 import org.springframework.stereotype.Service;
+
+import com.hen.flastcard.entity.LearningProgress;
 
 @Service
 public interface SpacedRepetitionStrategy {

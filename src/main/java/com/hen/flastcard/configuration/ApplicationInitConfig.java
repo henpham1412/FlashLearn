@@ -1,23 +1,24 @@
 package com.hen.flastcard.configuration;
 
+import java.util.HashSet;
+import java.util.Set;
 
-import com.hen.flastcard.constant.PredefinedRole;
-import com.hen.flastcard.entity.Role;
-import com.hen.flastcard.entity.User;
-import com.hen.flastcard.repository.RoleRepository;
-import com.hen.flastcard.repository.UserRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.HashSet;
-import java.util.Set;
+import com.hen.flastcard.constant.PredefinedRole;
+import com.hen.flastcard.entity.Role;
+import com.hen.flastcard.entity.User;
+import com.hen.flastcard.repository.RoleRepository;
+import com.hen.flastcard.repository.UserRepository;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @RequiredArgsConstructor
@@ -35,24 +36,19 @@ public class ApplicationInitConfig {
     @ConditionalOnProperty(
             prefix = "spring",
             value = "datasource.driverClassName",
-            havingValue = "com.mysql.cj.jdbc.Driver"
-    )
+            havingValue = "com.mysql.cj.jdbc.Driver")
     ApplicationRunner applicationRunner(UserRepository userRepository) {
         log.info("Initializing application.....");
         return args -> {
             if (userRepository.findByUsername(ADMIN_USER_NAME).isEmpty()) {
-                roleRepository.save(
-                        Role.builder()
-                                .name(PredefinedRole.USER_ROLE)
-                                .description("User role")
-                                .build()
-                );
-                Role adminRole = roleRepository.save(
-                        Role.builder()
-                                .name(PredefinedRole.ADMIN_ROLE)
-                                .description("Admin role")
-                                .build()
-                );
+                roleRepository.save(Role.builder()
+                        .name(PredefinedRole.USER_ROLE)
+                        .description("User role")
+                        .build());
+                Role adminRole = roleRepository.save(Role.builder()
+                        .name(PredefinedRole.ADMIN_ROLE)
+                        .description("Admin role")
+                        .build());
                 Set<Role> roles = new HashSet<>();
                 roles.add(adminRole);
                 User user = User.builder()

@@ -1,7 +1,7 @@
 package com.hen.flastcard.dto.request;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,9 +13,12 @@ import lombok.experimental.FieldDefaults;
 public class FlashCardRequest {
     @NotBlank(message = "WORD_REQUIRED")
     String word;
+
     @NotBlank(message = "HIRA_KATA_REQUIRED")
     String hira_kata;
+
     @NotBlank(message = "MEANING_REQUIRED")
     String meaning;
+
     String example;
 }

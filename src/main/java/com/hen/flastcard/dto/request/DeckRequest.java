@@ -1,6 +1,7 @@
 package com.hen.flastcard.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,6 +13,7 @@ import lombok.experimental.FieldDefaults;
 public class DeckRequest {
     @NotBlank(message = "DECK_NAME_REQUIRED")
     String name;
+
     @NotBlank(message = "DESCRIPTION_REQUIRED")
     String description;
 }

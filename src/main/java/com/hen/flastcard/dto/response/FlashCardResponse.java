@@ -1,6 +1,5 @@
 package com.hen.flastcard.dto.response;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

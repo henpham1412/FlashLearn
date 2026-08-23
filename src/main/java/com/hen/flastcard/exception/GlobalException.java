@@ -1,21 +1,25 @@
 package com.hen.flastcard.exception;
 
-import com.hen.flastcard.dto.response.ApiResponse;
+import java.util.Map;
+import java.util.Objects;
+
 import jakarta.validation.ConstraintViolation;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.Map;
-import java.util.Objects;
+import com.hen.flastcard.dto.response.ApiResponse;
+
+import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
 @Slf4j
 public class GlobalException {
-    private final String MIN_ATTRIBUTE = "min";
+    private static final String MIN_ATTRIBUTE = "min";
+
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity<ApiResponse> handlingRuntimeException(RuntimeException ex) {
         log.error("Exception: ", ex);
@@ -47,20 +51,31 @@ public class GlobalException {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse> handlingMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         ApiResponse<Object> response = new ApiResponse<>();
-        String enumKey = ex.getBindingResult().getFieldError().getDefaultMessage();
-        ErrorCode errorCode = ErrorCode.KEY_INVALID;
-        Map<String, Object> attributes = null;;
-        try {
-            errorCode = ErrorCode.valueOf(enumKey);
-            var constrainViolation = ex.getBindingResult().getAllErrors().getFirst()
-                    .unwrap(ConstraintViolation.class);
-            attributes = constrainViolation.getConstraintDescriptor().getAttributes();
-        } catch (IllegalArgumentException e) {
+        var bindingResult = ex.getBindingResult();
+        var fieldError = bindingResult.getFieldError();
+        String enumKey = null;
+        if (fieldError != null) {
+            enumKey = fieldError.getDefaultMessage();
+        }
 
+        ErrorCode errorCode = ErrorCode.KEY_INVALID;
+        Map<String, Object> attributes = null;
+        if (enumKey != null) {
+            try {
+                errorCode = ErrorCode.valueOf(enumKey);
+
+                var constrainViolation =
+                        ex.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+
+                attributes = constrainViolation.getConstraintDescriptor().getAttributes();
+            } catch (IllegalArgumentException _) {
+            }
         }
         response.setCode(errorCode.getCode());
-        response.setMessage(Objects.nonNull(attributes)
-        ? mapAttributes(errorCode.getMessage(), attributes): errorCode.getMessage());
+        response.setMessage(
+                Objects.nonNull(attributes)
+                        ? mapAttributes(errorCode.getMessage(), attributes)
+                        : errorCode.getMessage());
         return ResponseEntity.badRequest().body(response);
     }
 

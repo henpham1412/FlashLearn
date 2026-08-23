@@ -1,12 +1,14 @@
 package com.hen.flastcard.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Getter
@@ -33,15 +35,17 @@ public class LearningProgress {
 
     @Column(name = "last_review_date", nullable = true)
     LocalDateTime lastReviewDate;
+
     @Column(nullable = false, name = "next_review_date")
     LocalDateTime nextReviewDate;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     LocalDateTime createdAt;
     // config auditing later
-//    @CreatedBy
-//    @Column(name = "created_by", nullable = false, updatable = false)
-//    String createBy;
+    //    @CreatedBy
+    //    @Column(name = "created_by", nullable = false, updatable = false)
+    //    String createBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

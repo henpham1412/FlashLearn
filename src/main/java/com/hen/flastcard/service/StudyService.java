@@ -1,5 +1,11 @@
 package com.hen.flastcard.service;
 
+import java.time.LocalDateTime;
+import java.util.*;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hen.flastcard.dto.request.ReviewRequest;
 import com.hen.flastcard.dto.response.ReviewResponse;
 import com.hen.flastcard.dto.response.StudyCardResponse;
@@ -13,15 +19,11 @@ import com.hen.flastcard.mapper.StudyMapper;
 import com.hen.flastcard.repository.DeckRepository;
 import com.hen.flastcard.repository.FlashCardRepository;
 import com.hen.flastcard.repository.LearningProgressRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -35,10 +37,12 @@ public class StudyService {
     LearningProgressService learningProgressService;
     StudyMapper studyMapper;
     SpacedRepetitionStrategy spacedRepetitionStrategy;
+
     private Map<Long, LearningProgress> loadProgress(User user, Long deckId) {
-        List<LearningProgress> learningProgresses = learningProgressRepository.findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), deckId);
+        List<LearningProgress> learningProgresses =
+                learningProgressRepository.findAllByUser_IdAndFlashCard_Deck_Id(user.getId(), deckId);
         Map<Long, LearningProgress> progressMap = new HashMap<>();
-        for (LearningProgress progress: learningProgresses) {
+        for (LearningProgress progress : learningProgresses) {
             progressMap.put(progress.getFlashCard().getId(), progress);
         }
         return progressMap;
@@ -47,16 +51,18 @@ public class StudyService {
     private boolean isDue(LearningProgress progress) {
         return !progress.getNextReviewDate().isAfter(LocalDateTime.now());
     }
+
     @Transactional
     public List<StudyCardResponse> loadStudyCards(Long id) {
         List<StudyCardResponse> studyCardResponses = new ArrayList<>();
         List<LearningProgress> progresses = new ArrayList<>();
         User user = currentUserService.getCurrentUser();
-        Deck deck = deckRepository.findByIdAndUser_Id(id ,user.getId())
+        Deck _ = deckRepository
+                .findByIdAndUser_Id(id, user.getId())
                 .orElseThrow(() -> new AppException(ErrorCode.DECK_NOT_EXISTED));
         List<FlashCard> flashCards = flashCardRepository.findAllByDeck_Id(id);
         Map<Long, LearningProgress> progressMap = loadProgress(user, id);
-        for (FlashCard card: flashCards) {
+        for (FlashCard card : flashCards) {
             if (!progressMap.containsKey(card.getId())) {
                 // optimize: create a list to store progress then user saveAll to avoid multiple insert to db
                 progresses.add(learningProgressService.initializeProgress(user, card));
@@ -72,12 +78,13 @@ public class StudyService {
         learningProgressRepository.saveAll(progresses);
         return studyCardResponses;
     }
+
     @Transactional
     public ReviewResponse reviewCard(ReviewRequest request) {
         User user = currentUserService.getCurrentUser();
         LearningProgress progress = learningProgressRepository
                 .findByUser_IdAndFlashCard_Id(user.getId(), request.getCardId())
-                .orElseThrow(() -> new AppException(ErrorCode.PROGRESS_NOT_EXISTED));;
+                .orElseThrow(() -> new AppException(ErrorCode.PROGRESS_NOT_EXISTED));
         spacedRepetitionStrategy.updateProgress(progress, request.getQuality());
         learningProgressRepository.save(progress);
         return ReviewResponse.builder()
