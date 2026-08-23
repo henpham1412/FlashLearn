@@ -11,9 +11,10 @@ jobs:
   # JOB 1: check code quality and run test
   test-and-lint:
     runs-on: ubuntu-latest
-    # Grant the token permission to post comments on the PR.
+
     permissions:
-      pull-requests: write
+      contents: read # permission pull code
+      pull-requests: write  # Grant the token permission to post comments on the PR.
 
     steps:
       - name: Checkout code
