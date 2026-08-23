@@ -4,11 +4,17 @@ on:
   push:
     branches:
       - main # the script only run when push code on main
-
+  pull_request:
+    branches:
+      - main
 jobs:
   # JOB 1: check code quality and run test
   test-and-lint:
     runs-on: ubuntu-latest
+    # Grant the token permission to post comments on the PR.
+    permissions:
+      pull-requests: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -28,10 +34,21 @@ jobs:
       # step 2: run all Unit & Integration Test
       # GitHub Actions Ubuntu already have Docker so Testcontainers will run normally
       - name: Run Tests
-        run: mvn test
+        run: mvn test jacoco:report
+
+      - name: Add Coverage PR Comment
+        uses: Madrapps/jacoco-report@v1.6.1
+        if: github.event_name == 'pull_request' # only run and comment when create PR
+        with:
+          paths: ${{ github.workspace }}/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 70
+          min-coverage-changed-files: 80
+          title: 'Code Coverage Report (JaCoCo)'
   # JOB 2: Build Image and Deploy (only run if JOB 1 success)
   build-and-deploy:
     needs: test-and-lint # this is a fence to protect our system
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
 
     steps:
