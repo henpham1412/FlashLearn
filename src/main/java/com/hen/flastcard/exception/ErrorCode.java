@@ -40,6 +40,7 @@ public enum ErrorCode {
     ROLE_DESC_REQUIRED(1025, "you must have a role description", HttpStatus.BAD_REQUEST),
     PERMISSIONS_REQUIRED(1026, "Each role must have permissions", HttpStatus.BAD_REQUEST),
     ROLE_NOT_EXISTED(1027, "role has not been existed", HttpStatus.NOT_FOUND),
+    CSRF_TOKEN_INVALID(1028, "Invalid CSRF token", HttpStatus.FORBIDDEN),
     ;
     int code;
     String message;

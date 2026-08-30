@@ -2,6 +2,7 @@ package com.hen.flastcard.controller;
 
 import java.text.ParseException;
 import java.time.Duration;
+import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,6 +42,10 @@ public class AuthenticationController {
     @Value("${app.cookie.name}")
     protected String cookieName;
 
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    protected Long refreshDuration;
+
     @PostMapping("/auth/login")
     public ApiResponse<AuthenticationResponse> login(
             @RequestBody @Valid AuthenticationRequest request, HttpServletResponse response) {
@@ -51,10 +56,18 @@ public class AuthenticationController {
                 .secure(cookieSecure)
                 .sameSite("lax")
                 .path("/")
-                .maxAge(Duration.ofSeconds(120))
+                .maxAge(Duration.ofSeconds(refreshDuration))
+                .build();
+        String csrfToken = UUID.randomUUID().toString();
+        ResponseCookie csrfCookie = ResponseCookie.from("XSRF-TOKEN", csrfToken)
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofSeconds(refreshDuration))
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, csrfCookie.toString());
 
         return ApiResponse.<AuthenticationResponse>builder()
                 .result(AuthenticationResponse.builder()
@@ -99,7 +112,7 @@ public class AuthenticationController {
                 .secure(cookieSecure)
                 .sameSite("lax")
                 .path("/")
-                .maxAge(Duration.ofSeconds(120))
+                .maxAge(Duration.ofSeconds(refreshDuration))
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
