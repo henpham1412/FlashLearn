@@ -60,11 +60,11 @@ public class AuthenticationController {
                 .build();
         String csrfToken = UUID.randomUUID().toString();
         ResponseCookie csrfCookie = ResponseCookie.from("XSRF-TOKEN", csrfToken)
-                        .secure(cookieSecure)
-                        .sameSite("Lax")
-                        .path("/")
-                        .maxAge(Duration.ofSeconds(refreshDuration))
-                        .build();
+                .secure(cookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofSeconds(refreshDuration))
+                .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, csrfCookie.toString());
