@@ -51,6 +51,7 @@ class AuthenticationControllerTest {
     private AuthenticationResponse authenticationResponse;
     private RefreshResponse refreshResponse;
     private static final String CSRF_TOKEN = "test-csrf-token";
+
     @BeforeEach
     void initData() {
         authenticationRequest = AuthenticationRequest.builder()
@@ -94,16 +95,11 @@ class AuthenticationControllerTest {
         doNothing().when(authenticationService).logout("refresh-token");
 
         mockMvc.perform(post("/api/auth/logout")
-                        .cookie(
-                                new Cookie("refresh_token", "refresh-token"),
-                                new Cookie("XSRF-TOKEN", CSRF_TOKEN)
-                        )
+                        .cookie(new Cookie("refresh_token", "refresh-token"), new Cookie("XSRF-TOKEN", CSRF_TOKEN))
                         .header("X-XSRF-TOKEN", CSRF_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1000))
-                .andExpect(header().string(
-                        HttpHeaders.SET_COOKIE,
-                        Matchers.containsString("refresh_token=")));
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, Matchers.containsString("refresh_token=")));
 
         verify(jwtService).getRefreshToken(any(HttpServletRequest.class));
 
@@ -117,17 +113,13 @@ class AuthenticationControllerTest {
         when(authenticationService.refresh("old-refresh-token")).thenReturn(refreshResponse);
 
         mockMvc.perform(post("/api/auth/refresh")
-                        .cookie(
-                                new Cookie("refresh_token", "old-refresh-token"),
-                                new Cookie("XSRF-TOKEN", CSRF_TOKEN)
-                        )
+                        .cookie(new Cookie("refresh_token", "old-refresh-token"), new Cookie("XSRF-TOKEN", CSRF_TOKEN))
                         .header("X-XSRF-TOKEN", CSRF_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(1000))
                 .andExpect(jsonPath("$.result.accessToken").value("new-access-token"))
                 .andExpect(header().string(
-                        HttpHeaders.SET_COOKIE,
-                        Matchers.containsString("refresh_token=new-refresh-token")));
+                                HttpHeaders.SET_COOKIE, Matchers.containsString("refresh_token=new-refresh-token")));
 
         verify(jwtService).getRefreshToken(any(HttpServletRequest.class));
 
@@ -136,11 +128,9 @@ class AuthenticationControllerTest {
 
     @Test
     void refresh_missingCsrfToken_forbidden() throws Exception {
-        when(jwtService.getRefreshToken(any(HttpServletRequest.class)))
-                .thenReturn("old-refresh-token");
+        when(jwtService.getRefreshToken(any(HttpServletRequest.class))).thenReturn("old-refresh-token");
 
-        mockMvc.perform(post("/api/auth/refresh")
-                        .cookie(new Cookie("refresh_token", "old-refresh-token")))
+        mockMvc.perform(post("/api/auth/refresh").cookie(new Cookie("refresh_token", "old-refresh-token")))
                 .andExpect(status().isForbidden());
 
         verify(authenticationService, never()).refresh(any());
@@ -149,10 +139,7 @@ class AuthenticationControllerTest {
     @Test
     void logout_invalidCsrfToken_forbidden() throws Exception {
         mockMvc.perform(post("/api/auth/logout")
-                        .cookie(
-                                new Cookie("refresh_token", "refresh-token"),
-                                new Cookie("XSRF-TOKEN", "correct-token")
-                        )
+                        .cookie(new Cookie("refresh_token", "refresh-token"), new Cookie("XSRF-TOKEN", "correct-token"))
                         .header("X-XSRF-TOKEN", "wrong-token"))
                 .andExpect(status().isForbidden());
 
