@@ -19,13 +19,6 @@ public class InvalidatedTokenFamilyService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void revokeFamily(String familyId, Date expiryTime) {
-        if (!invalidatedTokenFamilyRepository.existsById(familyId)) {
-            invalidatedTokenFamilyRepository.save(
-                    InvalidatedTokenFamily.builder()
-                            .familyId(familyId)
-                            .expiryTime(expiryTime)
-                            .build()
-            );
-        }
+        invalidatedTokenFamilyRepository.revokeFamily(familyId, expiryTime);
     }
 }

@@ -91,27 +91,23 @@ public class AuthenticationService {
     public RefreshResponse refresh(String refreshToken) throws ParseException, JOSEException {
         // verify refresh token
         SignedJWT signedJWT = jwtService.verifyRefreshToken(refreshToken);
-
         var jti = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
         String familyId = signedJWT.getJWTClaimsSet()
                 .getStringClaim("familyId");
-
-        // detect refresh-token reuse
-        if (invalidatedTokenRepository.existsById(jti)) {
-            invalidatedTokenFamilyService.revokeFamily(familyId, expiryTime);
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
 
         // check the whole family was already revoked
         if (invalidatedTokenFamilyRepository.existsById(familyId)) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        // revoke current refresh token
-        InvalidatedToken invalidatedToken =
-                InvalidatedToken.builder().id(jti).expiryTime(expiryTime).familyId(familyId).build();
-        invalidatedTokenRepository.save(invalidatedToken);
+        // Automatically consume refresh token
+        int consumed = invalidatedTokenRepository.consume(jti, familyId, expiryTime);
+        // This refresh token is reusing
+        if (consumed == 0) {
+            invalidatedTokenFamilyService.revokeFamily(familyId, expiryTime);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
         // generate new access token
         var email = signedJWT.getJWTClaimsSet().getSubject();
