@@ -3,8 +3,6 @@ package com.hen.flastcard.service;
 import java.text.ParseException;
 import java.util.Date;
 
-import com.hen.flastcard.entity.InvalidatedTokenFamily;
-import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -18,6 +16,7 @@ import com.hen.flastcard.dto.response.RefreshResponse;
 import com.hen.flastcard.entity.InvalidatedToken;
 import com.hen.flastcard.exception.AppException;
 import com.hen.flastcard.exception.ErrorCode;
+import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
 import com.hen.flastcard.repository.InvalidatedTokenRepository;
 import com.hen.flastcard.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
@@ -93,8 +92,7 @@ public class AuthenticationService {
         SignedJWT signedJWT = jwtService.verifyRefreshToken(refreshToken);
         var jti = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        String familyId = signedJWT.getJWTClaimsSet()
-                .getStringClaim("familyId");
+        String familyId = signedJWT.getJWTClaimsSet().getStringClaim("familyId");
 
         // check the whole family was already revoked
         if (invalidatedTokenFamilyRepository.existsById(familyId)) {

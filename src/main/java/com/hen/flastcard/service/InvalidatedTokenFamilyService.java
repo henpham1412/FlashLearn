@@ -1,15 +1,16 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.entity.InvalidatedTokenFamily;
-import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
+import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 @Service
 @RequiredArgsConstructor

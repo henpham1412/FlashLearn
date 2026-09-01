@@ -1,15 +1,16 @@
 package com.hen.flastcard.service;
 
-import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
+import static org.mockito.Mockito.verify;
+
+import java.util.Date;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Date;
-
-import static org.mockito.Mockito.verify;
+import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
 
 @ExtendWith(MockitoExtension.class)
 class InvalidatedTokenFamilyServiceTest {
@@ -23,16 +24,10 @@ class InvalidatedTokenFamilyServiceTest {
     @Test
     void revokeFamily_valid_success() {
         String familyId = "family-123";
-        Date expiryTime = new Date(
-                System.currentTimeMillis() + 60_000
-        );
+        Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
 
-        invalidatedTokenFamilyService.revokeFamily(
-                familyId,
-                expiryTime
-        );
+        invalidatedTokenFamilyService.revokeFamily(familyId, expiryTime);
 
-        verify(invalidatedTokenFamilyRepository)
-                .revokeFamily(familyId, expiryTime);
+        verify(invalidatedTokenFamilyRepository).revokeFamily(familyId, expiryTime);
     }
 }

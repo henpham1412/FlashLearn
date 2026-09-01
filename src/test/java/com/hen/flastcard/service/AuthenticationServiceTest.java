@@ -6,7 +6,6 @@ import static org.mockito.Mockito.*;
 import java.util.Date;
 import java.util.Optional;
 
-import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +22,7 @@ import com.hen.flastcard.entity.InvalidatedToken;
 import com.hen.flastcard.entity.User;
 import com.hen.flastcard.exception.AppException;
 import com.hen.flastcard.exception.ErrorCode;
+import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
 import com.hen.flastcard.repository.InvalidatedTokenRepository;
 import com.hen.flastcard.repository.UserRepository;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -222,58 +222,39 @@ class AuthenticationServiceTest {
         String familyId = "family-123";
         Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
 
-        SignedJWT signedJWT =
-                createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
 
-        when(jwtService.verifyRefreshToken(refreshToken))
-                .thenReturn(signedJWT);
+        when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
 
-        when(invalidatedTokenFamilyRepository.existsById(familyId))
-                .thenReturn(false);
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(false);
 
-        when(invalidatedTokenRepository.consume(
-                jit,
-                familyId,
-                expiryTime
-        )).thenReturn(1);
+        when(invalidatedTokenRepository.consume(jit, familyId, expiryTime)).thenReturn(1);
 
-        when(userRepository.findByEmail(user.getEmail()))
-                .thenReturn(Optional.of(user));
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
-        when(jwtService.generateAccessToken(user))
-                .thenReturn(newAccessToken);
+        when(jwtService.generateAccessToken(user)).thenReturn(newAccessToken);
 
-        when(jwtService.generateRefreshToken(user, familyId))
-                .thenReturn(newRefreshToken);
+        when(jwtService.generateRefreshToken(user, familyId)).thenReturn(newRefreshToken);
 
         var response = authenticationService.refresh(refreshToken);
 
-        Assertions.assertThat(response.getAccessToken())
-                .isEqualTo(newAccessToken);
+        Assertions.assertThat(response.getAccessToken()).isEqualTo(newAccessToken);
 
-        Assertions.assertThat(response.getRefreshToken())
-                .isEqualTo(newRefreshToken);
+        Assertions.assertThat(response.getRefreshToken()).isEqualTo(newRefreshToken);
 
-        verify(jwtService)
-                .verifyRefreshToken(refreshToken);
+        verify(jwtService).verifyRefreshToken(refreshToken);
 
-        verify(invalidatedTokenFamilyRepository)
-                .existsById(familyId);
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
 
-        verify(invalidatedTokenRepository)
-                .consume(jit, familyId, expiryTime);
+        verify(invalidatedTokenRepository).consume(jit, familyId, expiryTime);
 
-        verify(userRepository)
-                .findByEmail(user.getEmail());
+        verify(userRepository).findByEmail(user.getEmail());
 
-        verify(jwtService)
-                .generateAccessToken(user);
+        verify(jwtService).generateAccessToken(user);
 
-        verify(jwtService)
-                .generateRefreshToken(user, familyId);
+        verify(jwtService).generateRefreshToken(user, familyId);
 
-        verify(invalidatedTokenFamilyService, never())
-                .revokeFamily(anyString(), any());
+        verify(invalidatedTokenFamilyService, never()).revokeFamily(anyString(), any());
     }
 
     @Test
@@ -282,49 +263,31 @@ class AuthenticationServiceTest {
         String familyId = "family-123";
         Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
 
-        SignedJWT signedJWT =
-                createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
 
-        when(jwtService.verifyRefreshToken(refreshToken))
-                .thenReturn(signedJWT);
+        when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
 
-        when(invalidatedTokenFamilyRepository.existsById(familyId))
-                .thenReturn(false);
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(false);
 
-        when(invalidatedTokenRepository.consume(
-                jit,
-                familyId,
-                expiryTime
-        )).thenReturn(1);
+        when(invalidatedTokenRepository.consume(jit, familyId, expiryTime)).thenReturn(1);
 
-        when(userRepository.findByEmail(user.getEmail()))
-                .thenReturn(Optional.empty());
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> authenticationService.refresh(refreshToken)
-        );
+        var exception = assertThrows(AppException.class, () -> authenticationService.refresh(refreshToken));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.UNAUTHENTICATED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED);
 
-        verify(jwtService)
-                .verifyRefreshToken(refreshToken);
+        verify(jwtService).verifyRefreshToken(refreshToken);
 
-        verify(invalidatedTokenFamilyRepository)
-                .existsById(familyId);
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
 
-        verify(invalidatedTokenRepository)
-                .consume(jit, familyId, expiryTime);
+        verify(invalidatedTokenRepository).consume(jit, familyId, expiryTime);
 
-        verify(userRepository)
-                .findByEmail(user.getEmail());
+        verify(userRepository).findByEmail(user.getEmail());
 
-        verify(jwtService, never())
-                .generateAccessToken(any());
+        verify(jwtService, never()).generateAccessToken(any());
 
-        verify(jwtService, never())
-                .generateRefreshToken(any());
+        verify(jwtService, never()).generateRefreshToken(any());
     }
 
     @Test
@@ -333,40 +296,27 @@ class AuthenticationServiceTest {
         String familyId = "family-123";
         Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
 
-        SignedJWT signedJWT =
-                createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
 
-        when(jwtService.verifyRefreshToken(refreshToken))
-                .thenReturn(signedJWT);
+        when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
 
-        when(invalidatedTokenFamilyRepository.existsById(familyId))
-                .thenReturn(true);
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(true);
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> authenticationService.refresh(refreshToken)
-        );
+        var exception = assertThrows(AppException.class, () -> authenticationService.refresh(refreshToken));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.UNAUTHENTICATED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED);
 
-        verify(jwtService)
-                .verifyRefreshToken(refreshToken);
+        verify(jwtService).verifyRefreshToken(refreshToken);
 
-        verify(invalidatedTokenFamilyRepository)
-                .existsById(familyId);
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
 
-        verify(invalidatedTokenRepository, never())
-                .consume(anyString(), anyString(), any(Date.class));
+        verify(invalidatedTokenRepository, never()).consume(anyString(), anyString(), any(Date.class));
 
-        verify(userRepository, never())
-                .findByEmail(anyString());
+        verify(userRepository, never()).findByEmail(anyString());
 
-        verify(jwtService, never())
-                .generateAccessToken(any());
+        verify(jwtService, never()).generateAccessToken(any());
 
-        verify(jwtService, never())
-                .generateRefreshToken(any(), anyString());
+        verify(jwtService, never()).generateRefreshToken(any(), anyString());
     }
 
     @Test
@@ -375,56 +325,34 @@ class AuthenticationServiceTest {
         String familyId = "family-123";
         Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
 
-        SignedJWT signedJWT =
-                createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
 
-        when(jwtService.verifyRefreshToken(refreshToken))
-                .thenReturn(signedJWT);
+        when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
 
-        when(invalidatedTokenFamilyRepository.existsById(familyId))
-                .thenReturn(false);
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(false);
 
-        when(invalidatedTokenRepository.consume(
-                jit,
-                familyId,
-                expiryTime))
-                .thenReturn(0);
+        when(invalidatedTokenRepository.consume(jit, familyId, expiryTime)).thenReturn(0);
 
-        var exception = assertThrows(
-                AppException.class,
-                () -> authenticationService.refresh(refreshToken)
-        );
+        var exception = assertThrows(AppException.class, () -> authenticationService.refresh(refreshToken));
 
-        Assertions.assertThat(exception.getErrorCode())
-                .isEqualTo(ErrorCode.UNAUTHENTICATED);
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED);
 
-        verify(jwtService)
-                .verifyRefreshToken(refreshToken);
+        verify(jwtService).verifyRefreshToken(refreshToken);
 
-        verify(invalidatedTokenFamilyRepository)
-                .existsById(familyId);
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
 
-        verify(invalidatedTokenRepository)
-                .consume(jit, familyId, expiryTime);
+        verify(invalidatedTokenRepository).consume(jit, familyId, expiryTime);
 
-        verify(invalidatedTokenFamilyService)
-                .revokeFamily(familyId, expiryTime);
+        verify(invalidatedTokenFamilyService).revokeFamily(familyId, expiryTime);
 
-        verify(userRepository, never())
-                .findByEmail(anyString());
+        verify(userRepository, never()).findByEmail(anyString());
 
-        verify(jwtService, never())
-                .generateAccessToken(any());
+        verify(jwtService, never()).generateAccessToken(any());
 
-        verify(jwtService, never())
-                .generateRefreshToken(any(), anyString());
+        verify(jwtService, never()).generateRefreshToken(any(), anyString());
     }
 
-    private SignedJWT createSignedJWT(
-            String jit,
-            String subject,
-            String familyId,
-            Date expiryTime) {
+    private SignedJWT createSignedJWT(String jit, String subject, String familyId, Date expiryTime) {
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .jwtID(jit)
@@ -436,10 +364,7 @@ class AuthenticationServiceTest {
         return new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
     }
 
-    private SignedJWT createSignedJWT(
-            String jit,
-            String subject,
-            Date expiryTime) {
+    private SignedJWT createSignedJWT(String jit, String subject, Date expiryTime) {
 
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .jwtID(jit)
@@ -447,9 +372,6 @@ class AuthenticationServiceTest {
                 .expirationTime(expiryTime)
                 .build();
 
-        return new SignedJWT(
-                new JWSHeader(JWSAlgorithm.HS256),
-                claimsSet
-        );
+        return new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
     }
 }
