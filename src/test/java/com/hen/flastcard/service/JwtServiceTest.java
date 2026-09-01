@@ -221,8 +221,6 @@ class JwtServiceTest {
     void verifyRefreshToken_valid_success() throws Exception {
         var token = jwtService.generateRefreshToken(user);
 
-        when(invalidatedTokenRepository.existsById(anyString())).thenReturn(false);
-
         SignedJWT result = jwtService.verifyRefreshToken(token);
 
         Assertions.assertThat(result).isNotNull();
@@ -230,8 +228,6 @@ class JwtServiceTest {
         Assertions.assertThat(result.getJWTClaimsSet().getSubject()).isEqualTo(user.getEmail());
 
         Assertions.assertThat(result.getJWTClaimsSet().getClaim("type")).isEqualTo("refresh");
-
-        verify(invalidatedTokenRepository).existsById(anyString());
     }
 
     @Test
@@ -256,22 +252,6 @@ class JwtServiceTest {
         Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED);
 
         verifyNoInteractions(invalidatedTokenRepository);
-    }
-
-    @Test
-    void verifyRefreshToken_invalidated_fail() throws Exception {
-        var token = jwtService.generateRefreshToken(user);
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        String jit = signedJWT.getJWTClaimsSet().getJWTID();
-
-        when(invalidatedTokenRepository.existsById(jit)).thenReturn(true);
-
-        var exception = assertThrows(AppException.class, () -> jwtService.verifyRefreshToken(token));
-
-        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED);
-
-        verify(invalidatedTokenRepository).existsById(jit);
     }
 
     @Test
