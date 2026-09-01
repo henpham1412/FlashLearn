@@ -67,8 +67,14 @@ public class JwtService {
                 .build();
         return getToken(header, claimsSet);
     }
-
+    // login
     public String generateRefreshToken(User user) {
+        String familyId = UUID.randomUUID().toString();
+        return generateRefreshToken(user, familyId);
+    }
+
+    // refresh
+    public String generateRefreshToken(User user, String familyId) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getEmail())
@@ -79,6 +85,7 @@ public class JwtService {
                         .toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("type", "refresh")
+                .claim("familyId", familyId)
                 .build();
         return getToken(header, claimsSet);
     }
@@ -133,10 +140,6 @@ public class JwtService {
         Object type = signedJWT.getJWTClaimsSet().getClaim("type");
         var verified = signedJWT.verify(verifier);
         if (!(verified && expiryTime.after(new Date()) && "refresh".equals(type))) {
-            throw new AppException(ErrorCode.UNAUTHENTICATED);
-        }
-
-        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 

@@ -8,17 +8,17 @@ import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+@Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity
-public class InvalidatedToken {
-    @Id
-    String id;
+public class InvalidatedTokenFamily {
 
+    @Id
     String familyId;
+
     Date expiryTime;
 }

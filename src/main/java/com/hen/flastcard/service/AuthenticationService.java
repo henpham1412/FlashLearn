@@ -16,6 +16,7 @@ import com.hen.flastcard.dto.response.RefreshResponse;
 import com.hen.flastcard.entity.InvalidatedToken;
 import com.hen.flastcard.exception.AppException;
 import com.hen.flastcard.exception.ErrorCode;
+import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
 import com.hen.flastcard.repository.InvalidatedTokenRepository;
 import com.hen.flastcard.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
@@ -36,6 +37,8 @@ public class AuthenticationService {
     JwtService jwtService;
     PasswordEncoder passwordEncoder;
     InvalidatedTokenRepository invalidatedTokenRepository;
+    InvalidatedTokenFamilyRepository invalidatedTokenFamilyRepository;
+    InvalidatedTokenFamilyService invalidatedTokenFamilyService;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -87,19 +90,28 @@ public class AuthenticationService {
     public RefreshResponse refresh(String refreshToken) throws ParseException, JOSEException {
         // verify refresh token
         SignedJWT signedJWT = jwtService.verifyRefreshToken(refreshToken);
-
-        // revoke old refresh token
-        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+        var jti = signedJWT.getJWTClaimsSet().getJWTID();
         var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        InvalidatedToken invalidatedToken =
-                InvalidatedToken.builder().id(jit).expiryTime(expiryTime).build();
-        invalidatedTokenRepository.save(invalidatedToken);
+        String familyId = signedJWT.getJWTClaimsSet().getStringClaim("familyId");
+
+        // check the whole family was already revoked
+        if (invalidatedTokenFamilyRepository.existsById(familyId)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+        // Automatically consume refresh token
+        int consumed = invalidatedTokenRepository.consume(jti, familyId, expiryTime);
+        // This refresh token is reusing
+        if (consumed == 0) {
+            invalidatedTokenFamilyService.revokeFamily(familyId, expiryTime);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
         // generate new access token
         var email = signedJWT.getJWTClaimsSet().getSubject();
         var user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
         var accessToken = jwtService.generateAccessToken(user);
-        var newRefreshToken = jwtService.generateRefreshToken(user);
+        var newRefreshToken = jwtService.generateRefreshToken(user, familyId);
         return RefreshResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(newRefreshToken)

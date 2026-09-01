@@ -8,15 +8,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.hen.flastcard.entity.InvalidatedToken;
+import com.hen.flastcard.entity.InvalidatedTokenFamily;
 
 @Repository
-public interface InvalidatedTokenRepository extends JpaRepository<InvalidatedToken, String> {
+public interface InvalidatedTokenFamilyRepository extends JpaRepository<InvalidatedTokenFamily, String> {
     @Modifying
     @Query(value = """
-		INSERT INTO invalidated_token (id, family_id, expiry_time)
-		VALUES (:jti, :familyId, :expiryTime)
-		ON DUPLICATE KEY UPDATE id=id
+		INSERT INTO invalidated_token_family (family_id, expiry_time)
+		VALUES (:familyId, :expiryTime)
+		ON DUPLICATE KEY UPDATE family_id = family_id
 		""", nativeQuery = true)
-    int consume(@Param("jti") String jti, @Param("familyId") String familyId, @Param("expiryTime") Date expiryTime);
+    int revokeFamily(@Param("familyId") String familyId, @Param("expiryTime") Date expiryTime);
 }

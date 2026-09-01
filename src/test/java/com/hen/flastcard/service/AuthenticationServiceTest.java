@@ -22,6 +22,7 @@ import com.hen.flastcard.entity.InvalidatedToken;
 import com.hen.flastcard.entity.User;
 import com.hen.flastcard.exception.AppException;
 import com.hen.flastcard.exception.ErrorCode;
+import com.hen.flastcard.repository.InvalidatedTokenFamilyRepository;
 import com.hen.flastcard.repository.InvalidatedTokenRepository;
 import com.hen.flastcard.repository.UserRepository;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -42,10 +43,16 @@ class AuthenticationServiceTest {
     private JwtService jwtService;
 
     @Mock
+    private InvalidatedTokenFamilyService invalidatedTokenFamilyService;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @Mock
     private InvalidatedTokenRepository invalidatedTokenRepository;
+
+    @Mock
+    private InvalidatedTokenFamilyRepository invalidatedTokenFamilyRepository;
 
     private AuthenticationRequest authenticationRequest;
     private User user;
@@ -212,17 +219,22 @@ class AuthenticationServiceTest {
     @Test
     void refresh_valid_success() throws Exception {
         String jit = "jit-123";
+        String familyId = "family-123";
         Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
 
-        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), expiryTime);
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
 
         when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
+
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(false);
+
+        when(invalidatedTokenRepository.consume(jit, familyId, expiryTime)).thenReturn(1);
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
 
         when(jwtService.generateAccessToken(user)).thenReturn(newAccessToken);
 
-        when(jwtService.generateRefreshToken(user)).thenReturn(newRefreshToken);
+        when(jwtService.generateRefreshToken(user, familyId)).thenReturn(newRefreshToken);
 
         var response = authenticationService.refresh(refreshToken);
 
@@ -232,31 +244,32 @@ class AuthenticationServiceTest {
 
         verify(jwtService).verifyRefreshToken(refreshToken);
 
-        ArgumentCaptor<InvalidatedToken> tokenCaptor = ArgumentCaptor.forClass(InvalidatedToken.class);
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
 
-        verify(invalidatedTokenRepository).save(tokenCaptor.capture());
-
-        InvalidatedToken invalidatedToken = tokenCaptor.getValue();
-
-        Assertions.assertThat(invalidatedToken.getId()).isEqualTo(jit);
-
-        Assertions.assertThat(invalidatedToken.getExpiryTime()).isEqualTo(expiryTime);
+        verify(invalidatedTokenRepository).consume(jit, familyId, expiryTime);
 
         verify(userRepository).findByEmail(user.getEmail());
 
         verify(jwtService).generateAccessToken(user);
 
-        verify(jwtService).generateRefreshToken(user);
+        verify(jwtService).generateRefreshToken(user, familyId);
+
+        verify(invalidatedTokenFamilyService, never()).revokeFamily(anyString(), any());
     }
 
     @Test
     void refresh_userNotFound_fail() throws Exception {
         String jit = "jit-123";
+        String familyId = "family-123";
         Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
 
-        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), expiryTime);
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
 
         when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
+
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(false);
+
+        when(invalidatedTokenRepository.consume(jit, familyId, expiryTime)).thenReturn(1);
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.empty());
 
@@ -266,13 +279,89 @@ class AuthenticationServiceTest {
 
         verify(jwtService).verifyRefreshToken(refreshToken);
 
-        verify(invalidatedTokenRepository).save(any(InvalidatedToken.class));
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
+
+        verify(invalidatedTokenRepository).consume(jit, familyId, expiryTime);
 
         verify(userRepository).findByEmail(user.getEmail());
 
         verify(jwtService, never()).generateAccessToken(any());
 
         verify(jwtService, never()).generateRefreshToken(any());
+    }
+
+    @Test
+    void refresh_familyAlreadyRevoked_fail() throws Exception {
+        String jit = "jit-123";
+        String familyId = "family-123";
+        Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
+
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
+
+        when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
+
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(true);
+
+        var exception = assertThrows(AppException.class, () -> authenticationService.refresh(refreshToken));
+
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED);
+
+        verify(jwtService).verifyRefreshToken(refreshToken);
+
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
+
+        verify(invalidatedTokenRepository, never()).consume(anyString(), anyString(), any(Date.class));
+
+        verify(userRepository, never()).findByEmail(anyString());
+
+        verify(jwtService, never()).generateAccessToken(any());
+
+        verify(jwtService, never()).generateRefreshToken(any(), anyString());
+    }
+
+    @Test
+    void refresh_tokenReuse_fail() throws Exception {
+        String jit = "jit-123";
+        String familyId = "family-123";
+        Date expiryTime = new Date(System.currentTimeMillis() + 60_000);
+
+        SignedJWT signedJWT = createSignedJWT(jit, user.getEmail(), familyId, expiryTime);
+
+        when(jwtService.verifyRefreshToken(refreshToken)).thenReturn(signedJWT);
+
+        when(invalidatedTokenFamilyRepository.existsById(familyId)).thenReturn(false);
+
+        when(invalidatedTokenRepository.consume(jit, familyId, expiryTime)).thenReturn(0);
+
+        var exception = assertThrows(AppException.class, () -> authenticationService.refresh(refreshToken));
+
+        Assertions.assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED);
+
+        verify(jwtService).verifyRefreshToken(refreshToken);
+
+        verify(invalidatedTokenFamilyRepository).existsById(familyId);
+
+        verify(invalidatedTokenRepository).consume(jit, familyId, expiryTime);
+
+        verify(invalidatedTokenFamilyService).revokeFamily(familyId, expiryTime);
+
+        verify(userRepository, never()).findByEmail(anyString());
+
+        verify(jwtService, never()).generateAccessToken(any());
+
+        verify(jwtService, never()).generateRefreshToken(any(), anyString());
+    }
+
+    private SignedJWT createSignedJWT(String jit, String subject, String familyId, Date expiryTime) {
+
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .jwtID(jit)
+                .subject(subject)
+                .claim("familyId", familyId)
+                .expirationTime(expiryTime)
+                .build();
+
+        return new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
     }
 
     private SignedJWT createSignedJWT(String jit, String subject, Date expiryTime) {
