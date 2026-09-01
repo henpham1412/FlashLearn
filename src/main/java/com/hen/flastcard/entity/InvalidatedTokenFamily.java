@@ -1,23 +1,23 @@
 package com.hen.flastcard.entity;
 
-import java.util.Date;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.Date;
+
+@Entity
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Entity
-public class InvalidatedToken {
+public class InvalidatedTokenFamily {
+
     @Id
-    String id;
     String familyId;
+
     Date expiryTime;
 }
