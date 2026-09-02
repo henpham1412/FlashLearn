@@ -45,7 +45,6 @@ public class AuthenticationService {
     protected String SIGNED_KEY;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        log.info("SignerKey: {}", SIGNED_KEY);
         var user = userRepository
                 .findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));

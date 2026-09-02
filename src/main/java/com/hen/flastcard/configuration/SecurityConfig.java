@@ -65,14 +65,6 @@ public class SecurityConfig {
         return jwtAuthenticationConverter;
     }
 
-    //    @Bean
-    //    JwtDecoder jwtDecoder() {
-    //        SecretKeySpec keySpec = new SecretKeySpec(signerKey.getBytes(), "HS512");
-    //        return NimbusJwtDecoder.withSecretKey(keySpec)
-    //                .macAlgorithm(MacAlgorithm.HS512)
-    //                .build();
-    //    }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
