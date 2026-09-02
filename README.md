@@ -22,7 +22,7 @@
 ### 🧠 Spaced Repetition Learning
 * **SuperMemo-2 (SM-2) Algorithm:** Intelligently calculates the next review date based on user performance to ensure maximum retention.
 * **Smart Review System:** Automatically filters and displays only the flashcards that are due for review on the current day.
-* **Learning Progress Tracking:** Monitors and Tracks each user's learning progress across flashcards.
+* **Learning Progress Tracking:** Tracks each user's learning progress across flashcards.
 
 ### 📚 Content Management
 * **Deck CRUD:** Create, read, update, and delete personalized flashcard decks.
@@ -60,33 +60,117 @@ graph LR
     end
 ```
 
+### Authentication Flow
+
+FlashLearn uses short-lived access tokens with rotating refresh tokens.
+
+```text
+Login
+  │
+  ├── Access Token ──────► In-memory storage
+  │
+  └── Refresh Token ─────► HttpOnly Cookie
+                              │
+                              ▼
+                       Access Token expires
+                              │
+                              ▼
+                       POST /auth/refresh
+                              │
+                    ┌─────────┴─────────┐
+                    │                   │
+              CSRF validation      Token validation
+                    │                   │
+                    └─────────┬─────────┘
+                              ▼
+                    Atomic token consumption
+                              │
+                              ▼
+                    New Access Token
+                    + Rotated Refresh Token
+                    
+```
+
 ## 🔌 API Documentation
 
 Below are some of the main REST APIs provided by the backend.
 
+### Authentication
+
 | Method | Endpoint | Description | Authentication |
 |--------|----------|-------------|:--------------:|
-| POST | `/api/auth/login` | Authenticate user and return JWT | ❌ |
+| POST | `/api/auth/login` | Authenticate user and issue a short-lived access token and an HttpOnly refresh token cookie | ❌ |
+| POST | `/api/auth/refresh` | Rotate the refresh token and issue a new access token | 🍪 |
+| POST | `/api/auth/logout` | Revoke the current refresh token and invalidate the session | 🍪 |
 | POST | `/api/users` | Register a new account | ❌ |
-| GET | `/api/decks` | Get all decks of current user | ✅ |
+
+> 🍪 Refresh-token authentication is performed using an HttpOnly cookie.
+
+### Deck Management
+
+| Method | Endpoint | Description | Authentication |
+|--------|----------|-------------|:--------------:|
+| GET | `/api/decks` | Get all decks of the current user | ✅ |
 | POST | `/api/decks` | Create a new deck | ✅ |
 | GET | `/api/decks/{id}` | Get deck details | ✅ |
-| PUT | `/api/decks/{id}` | Update deck | ✅ |
-| DELETE | `/api/decks/{id}` | Delete deck | ✅ |
+| PUT | `/api/decks/{id}` | Update a deck | ✅ |
+| DELETE | `/api/decks/{id}` | Delete a deck | ✅ |
+
+### Flashcard Management
+
+| Method | Endpoint | Description | Authentication |
+|--------|----------|-------------|:--------------:|
 | GET | `/api/decks/{deckId}/cards` | Get all flashcards in a deck | ✅ |
 | POST | `/api/decks/{deckId}/cards` | Create a flashcard | ✅ |
-| POST | `/api/study/review` | Submit a review result (SM-2) | ✅ |
+| PUT | `/api/cards/{cardId}` | Update a flashcard | ✅ |
+| DELETE | `/api/cards/{cardId}` | Delete a flashcard | ✅ |
 
+### Study
+
+| Method | Endpoint | Description | Authentication |
+|--------|----------|-------------|:--------------:|
+| GET | `/api/study/decks/{deckId}` | Load flashcards due for review | ✅ |
+| POST | `/api/study/review` | Submit a review result and update SM-2 progress | ✅ |
 
 ## 🗄️ Database Design
 
-The database is designed using a normalized relational model to support authentication, flashcard management, and the SM-2 spaced repetition algorithm.
+The database is designed using a normalized relational model to support:
+
+- User authentication and authorization
+- Flashcard deck and card management
+- Per-user learning progress tracking
+- Refresh token revocation and reuse detection
 
 ### Entity Relationship Diagram
 
 <p align="center">
     <img src="docs/images/erd.png" width="900">
 </p>
+
+### Key Relationships
+
+- **User → Deck:** A user can own multiple flashcard decks.
+- **Deck → FlashCard:** A deck contains multiple flashcards.
+- **User → LearningProgress:** Learning progress is tracked independently for each user and flashcard.
+- **User ↔ Role:** Users can have multiple roles through a many-to-many relationship.
+- **Role ↔ Permission:** Roles can contain multiple permissions through a many-to-many relationship.
+- **InvalidatedToken:** Stores consumed refresh tokens using their unique `JTI`.
+- **InvalidatedTokenFamily:** Stores revoked refresh-token families to invalidate all tokens belonging to a compromised session.
+
+### Token Security Model
+
+Refresh tokens are organized into token families.
+
+Each refresh token contains:
+- A unique `JTI`
+- A `familyId`
+- An expiration time
+
+When a refresh token is successfully used, its `JTI` is atomically consumed and stored in `InvalidatedToken`.
+
+If a previously consumed refresh token is reused, the entire token family is revoked through `InvalidatedTokenFamily`.
+
+This design provides protection against refresh-token replay attacks while also handling concurrent refresh requests safely at the database level.
 
 ## 📸 Screenshots
 
@@ -116,43 +200,60 @@ The database is designed using a normalized relational model to support authenti
 ## 🛠️ Tech Stack & Infrastructure
 
 ### Application
+
 * **Backend:** Java 21, Spring Boot 3.x, Spring Security, Spring Data JPA, Hibernate
-* **Frontend:** React, Vite, Node.js 20+
+* **Frontend:** React, Vite, Axios, Ant Design
 * **Database:** MySQL 8
+* **Authentication:** JWT, OAuth2 Resource Server
+* **Testing:** JUnit 5, Mockito, Spring Boot Test, MockMvc
 
 ### DevOps & Cloud Deployment
 * **Containerization:** Docker & Docker Compose (with persistent volumes)
 * **CI/CD Pipeline:** Fully automated deployments using **GitHub Actions**. Pushes to the `main` branch trigger image builds on Docker Hub and auto-deploy to the server.
 * **Cloud Infrastructure:** Hosted on **AWS EC2**.
-* **Proxy & DNS:** Managed via **Cloudflare** (Cloudflare for DNS management and SSL.).
+* **Proxy & DNS:** Managed via **Cloudflare** for DNS management and SSL.
 * **Frontend Hosting:** Deployed edge-ready on **Vercel**.
 
+### Testing
+
+The project includes automated tests covering core business logic, REST APIs, authentication, authorization, and security scenarios.
+
+* **Unit Testing:** JUnit 5 and Mockito for service-layer business logic.
+* **Web Layer Testing:** MockMvc for REST controller testing.
+* **Integration Testing:** Spring Boot test context for security and application integration.
+* **Security Testing:** Authentication, authorization, CSRF protection, token expiration, refresh token rotation, and token reuse detection.
+* **Concurrency Testing:** Concurrent refresh requests are tested to verify atomic refresh-token consumption.
+* **CI Validation:** All automated tests are executed in the CI pipeline before deployment.
 ---
 
 ## 🚀 Getting Started (Local Development)
 
 ### 1. Prerequisites
+
 Ensure you have the following installed on your local machine:
+
 * **Java:** JDK 21
-* **Node:** Node.js 20+ and npm/yarn
+* **Node:** Node.js 20+
+* **Package Manager:** npm
 * **Build Tool:** Maven 3.9+
-* **Database:** MySQL 8.x (or Docker Desktop to run via container)
+* **Docker:** Docker Desktop with Docker Compose
 * **IDE:** IntelliJ IDEA (Backend) & VS Code (Frontend)
 
 ### 2. Environment Variables
-You will need to configure environment variables for both the backend and frontend to run the application locally.
 
-#### Backend (`application.yml` or `.env`)
-Create a `.env` file in the root of the Spring Boot project or inject these into your configuration:
+The application provides default values for local development, so no environment variables are required to run the project locally.
+
+For custom configuration, the following environment variables can be provided:
+
+#### Backend
+
 ```env
-DB_URL=jdbc:mysql://localhost:3306/flashlearn
-DB_USERNAME=root
-DB_PASSWORD=root
-
-JWT_SIGNER_KEY=your_super_secret_key_here_must_be_long_enough
-
-SERVER_PORT=8080
-SERVER_CONTEXT_PATH=/flashcard
+DBMS_CONNECTION=jdbc:mysql://localhost:3307/flashcard_service?useAffectedRows=true
+DBMS_USERNAME=root
+DBMS_PASSWORD=root
+JWT_SIGNER_KEY=your_super_secret_key_here
+COOKIE_NAME=refresh_token
+COOKIE_SECURE=false
 ```
 
 #### Frontend (`.env`)
@@ -163,18 +264,17 @@ VITE_API_URL=http://localhost:8080/flashcard
 
 ### 3. Running the Application
 
-#### Starting the Database (via Docker)
-If you prefer not to install MySQL locally, you can spin it up quickly using Docker:
-```bash
-docker run --name flashlearn-db -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=flashlearn -p 3306:3306 -d mysql:8
-```
+#### Starting the Database with Docker Compose
+From the project root, start the application:
 
-#### Starting the Backend
-Navigate to the backend directory and run:
 ```bash
-mvn clean install
-mvn spring-boot:run
+docker compose up -d
 ```
+This starts:
+
+* MySQL 8 database
+* Spring Boot backend
+
 *The API will be accessible at `http://localhost:8080/flashcard`*
 
 #### Starting the Frontend
@@ -188,12 +288,12 @@ npm run dev
 ---
 
 ## 📈 Future Enhancements
-* Incorporate interactive charts for deeper learning analytics.
-* Add user roles (e.g., Admin dashboard).
-* Support multimedia (images/audio) within flashcards.
-* Search flashcards
+
+* Interactive learning analytics dashboard
 * Public deck sharing
 * CSV import/export
-* Learning statistics dashboard
+* Flashcard search and filtering
+* Multimedia support (images/audio)
+* Admin dashboard
 ---
 *Developed with ❤️ as a modern, scalable full-stack application.*
