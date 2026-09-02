@@ -30,10 +30,18 @@
 * **Data Isolation:** Strict ownership enforcement ensuring users can only access and manage their own data.
 
 ### 🔐 Security & Architecture
-* **Authentication:** Secure user registration and login using JWT (JSON Web Tokens).
-* **Password Encryption:** Strong password hashing implemented via BCrypt.
-* **RESTful Architecture:** RESTful APIs for communication between the React frontend and Spring Boot backend.
-* **CORS Configured:** Secure cross-origin resource sharing configured for production and local environments.
+
+* **JWT Authentication:** Stateless authentication using short-lived JWT access tokens.
+* **Authorization:** Role- and permission-based authorization using Spring Security method security.
+* **Refresh Token Rotation:** Refresh tokens are stored in `HttpOnly` cookies and rotated after each successful refresh request.
+* **CSRF Protection:** Double-submit cookie pattern is used to protect state-changing refresh and logout requests.
+* **Refresh Token Reuse Detection:** Each refresh token is assigned a unique `JTI` and grouped into a token family. Reusing an already-consumed refresh token automatically revokes the entire token family.
+* **Concurrent Refresh Protection:** Refresh token consumption is performed atomically at the database level to prevent multiple concurrent requests from successfully consuming the same refresh token.
+* **Token Revocation:** Invalidated refresh tokens and revoked token families are persisted and checked during authentication.
+* **Password Security:** User passwords are securely hashed using BCrypt.
+* **Data Isolation:** Repository-level ownership checks ensure users can only access their own decks and flashcards.
+* **CORS:** Cross-Origin Resource Sharing is explicitly configured for trusted frontend origins.
+* **RESTful Architecture:** RESTful APIs provide communication between the React frontend and Spring Boot backend.
 
 ---
 
