@@ -201,7 +201,7 @@ This design provides protection against refresh-token replay attacks while also 
 
 ### Application
 
-* **Backend:** Java 21, Spring Boot 3.x, Spring Security, Spring Data JPA, Hibernate
+* **Backend:** Java 25, Spring Boot 4.x, Spring Security, Spring Data JPA, Hibernate
 * **Frontend:** React, Vite, Axios, Ant Design
 * **Database:** MySQL 8
 * **Authentication:** JWT, OAuth2 Resource Server
@@ -232,7 +232,7 @@ The project includes automated tests covering core business logic, REST APIs, au
 
 Ensure you have the following installed on your local machine:
 
-* **Java:** JDK 21
+* **Java:** JDK 25
 * **Node:** Node.js 20+
 * **Package Manager:** npm
 * **Build Tool:** Maven 3.9+
